@@ -100,3 +100,7 @@ crashlytics-build.properties
 fabric.properties
 
 # Created by .ignore support plugin (hsz.mobi)
+
+# Intellij Idea project
+.idea/
+ndn-agent.iml
