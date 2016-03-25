@@ -1,10 +1,12 @@
 package agent
 
-import "fmt"
+import (
+	"fmt"
+	"ndn"
+)
 
-func Init() {
-	fmt.Println("init")
-	/* load from config file */
+func Init(config ndn.Config) {
+	fmt.Println("agent init")
 	/* start socket service for client */
-	/* contact peer / neighbour from config file */
+	/* contact peer / neighbour from config */
 }
