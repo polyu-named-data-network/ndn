@@ -3,17 +3,26 @@ package ndn
 import (
 	"encoding/json"
 	"fmt"
-	"ndn/seed"
 	"os"
+	"strconv"
 )
 
+type Address struct {
+	InterestPort int
+	DataPort     int
+	Host         string
+	Mode         string
+}
 type Config struct {
 	Agent struct {
-		Port  int
-		Peers []seed.Address
+		Self  Address
+		Peers []Address
 	}
 }
 
+func JoinHostPort(host string, port int) string {
+	return host + ":" + strconv.Itoa(port)
+}
 func CreateConfigFromFile(filename string) (config Config, err error) {
 	file, err := os.Open(filename)
 	if err != nil {

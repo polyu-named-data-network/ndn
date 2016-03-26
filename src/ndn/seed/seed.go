@@ -1,9 +1,6 @@
 package seed
 
-type Address struct {
-	Host string
-	Port int
-}
+import "strconv"
 
 func Register(address Address) {
 

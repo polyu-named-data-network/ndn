@@ -4,13 +4,17 @@ import (
 	"fmt"
 	"ndn"
 	"ndn/agent"
+	"sync"
 )
 
 func main() {
 	fmt.Println("program start")
-	if config, err := ndn.CreateConfigFromFile("config.json"); err != nil {
+	config, err := ndn.CreateConfigFromFile("config.json")
+	if err != nil {
 		fmt.Println("failed to load config", err)
-	} else {
-		agent.Init(config)
+		return
 	}
+	wg := sync.WaitGroup{}
+	agent.Init(config, &wg)
+	wg.Wait()
 }
