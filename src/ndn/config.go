@@ -3,14 +3,18 @@ package ndn
 import (
 	"encoding/json"
 	"fmt"
-	"ndn/seed"
 	"os"
 )
+
+type Address struct {
+	Host string
+	Port int
+}
 
 type Config struct {
 	Agent struct {
 		Port  int
-		Peers []seed.Address
+		Peers []Address
 	}
 }
 

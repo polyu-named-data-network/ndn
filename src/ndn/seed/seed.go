@@ -1,10 +1,7 @@
 package seed
 
-type Address struct {
-	Host string
-	Port int
-}
+import "ndn"
 
-func Register(address Address) {
+func Register(address ndn.Address) {
 
 }
