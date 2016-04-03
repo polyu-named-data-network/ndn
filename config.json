@@ -1,13 +1,16 @@
 {
   "Agent": {
-    "InterestPort": 8123,
-    "DataPort": 8124,
-    "Mode": "tcp",
+    "Self": {
+      "Host": "0.0.0.0",
+      "InterestPort": 8123,
+      "DataPort": 8124,
+      "Mode": "tcp"
+    },
     "Peers": [
       {
+        "Host": "127.0.0.1",
         "InterestPort": 8123,
         "DataPort": 8124,
-        "Host": "127.0.0.1",
         "Mode": "tcp"
       }
     ]

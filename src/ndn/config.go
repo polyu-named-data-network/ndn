@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 type Address struct {
@@ -20,9 +19,6 @@ type Config struct {
 	}
 }
 
-func JoinHostPort(host string, port int) string {
-	return host + ":" + strconv.Itoa(port)
-}
 func CreateConfigFromFile(filename string) (config Config, err error) {
 	file, err := os.Open(filename)
 	if err != nil {

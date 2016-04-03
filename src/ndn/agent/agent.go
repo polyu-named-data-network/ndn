@@ -4,81 +4,85 @@ import (
 	"fmt"
 	"ndn"
 	"net"
-	"strconv"
 	"sync"
+	"log"
 )
 
-func handleInterestConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-	return
+type interestHandler_s struct {
+	wg *sync.WaitGroup
 }
-func handleDataConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-	return
+type dataHandler_s struct {
+	wg *sync.WaitGroup
 }
 
+func (interestHandler_s) HandleError(err error) {
+	fmt.Println("falied to listen on incoming interest socket", err)
+}
+func (dataHandler_s)HandleError(err error) {
+	fmt.Println("failed to listen on incoming data socket", err)
+}
+
+/* REMARK: this function is blocking */
+func (p interestHandler_s)HandleConnection(conn net.Conn) {
+	p.wg.Add(1)
+	defer p.wg.Done()
+	//TODO
+}
+
+/* REMARK: this function is blocking */
+func (p dataHandler_s)HandleConnection(conn net.Conn) {
+	p.wg.Add(1)
+	defer p.wg.Done()
+	//TODO
+}
+
+/*
+  1. start interest server
+  2. start data server
+  3. connect to peer interest server
+  4. connect to peer data server
+*/
 func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 	fmt.Println("agent init start")
-	/* start socket service for client */
 	server := config.Agent.Self
+
+	/* 1. start interest server */
 	interestLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.InterestPort))
 	if err != nil {
-		fmt.Println("failed to listen on interest port", server.InterestPort, err)
-		return
+		log.Fatalf("failed to start interest socker:%v\nserver=%v\nport=%v\n", err, server.Host, server.InterestPort)
 	}
+	// fork and wait for handle incoming connection
+	interestHandler := &interestHandler_s{wg}
 	wg.Add(1)
-	go func(ln net.Listener, wg *sync.WaitGroup) {
-		defer wg.Done()
-		for {
-			if conn, err := ln.Accept(); err != nil {
-				fmt.Println("failed to accept interest connection", err)
-				return err
-			} else {
-				wg.Add(1)
-				handleInterestConnection(conn, wg)
-			}
-		}
-	}()
-	ln, err := net.Listen(config.Agent.Mode, ":"+strconv.Itoa(config.Agent.Port))
+	go ndn.LoopWaitHandleConnection(interestLn, interestHandler)
+
+	/* 2. start data server */
+	dataLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.DataPort))
 	if err != nil {
-		fmt.Printf("failed to listen on port %v, %v\n", config.Agent.Port, err)
-		return
+		log.Fatalln("falied to listen on data port:", err)
 	}
-	fmt.Println("fork to handle incoming connections")
+	dataHandler := &dataHandler_s{wg}
 	wg.Add(1)
-	go func(ln net.Listener, wg *sync.WaitGroup) {
-		defer wg.Done()
-		for {
-			fmt.Println("waiting for incoming connection")
-			conn, err := ln.Accept()
-			if err != nil {
-				fmt.Println("failed to accect incoming connection", err)
-			}
-			fmt.Printf("accepted incoming connection, remote address = %v\n", conn.RemoteAddr())
-			wg.Add(1)
-			go handlePeerConnection(conn, wg)
-		}
-	}(ln, wg)
-	/* contact peer / neighbour from config */
+	go ndn.LoopWaitHandleConnection(dataLn, dataHandler)
+
 	for _, peer := range config.Agent.Peers {
 		fmt.Println("connecting to peer", peer)
-		interestConn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.InterestPort))
-		if err != nil {
-			fmt.Println("failed to start interest connection to", peer, err)
-			continue
-		} else {
+		/* 3. connect to peer interest server */
+		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.InterestPort)); err != nil {
+			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.InterestPort)
+		}else {
 			wg.Add(1)
-			go handleInterestConnection(interestConn, wg)
+			go interestHandler.HandleConnection(conn)
 		}
-		dataConn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.DataPort))
-		if err != nil {
-			fmt.Println("failed to start data connection to", peer, err)
-			continue
-		} else {
+		/* 4. connect to peer data server */
+		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.DataPort)); err != nil {
+			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.DataPort)
+		}else {
 			wg.Add(1)
-			go handleDataConnection(dataConn, wg)
+			go dataHandler.HandleConnection(conn)
 		}
 	}
+
 	fmt.Println("agent init finished")
 	return
 }
