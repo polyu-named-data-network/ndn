@@ -5,7 +5,6 @@ import (
 	"ndn"
 	"net"
 	"sync"
-	"log"
 )
 
 type interestHandler_s struct {
@@ -46,27 +45,30 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 	fmt.Println("agent init start")
 	server := config.Agent.Self
 
-	/* 1. start interest server */
-	interestLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.InterestPort))
-	if err != nil {
-		log.Fatalf("failed to start interest socker:%v\nserver=%v\nport=%v\n", err, server.Host, server.InterestPort)
-	}
-	// fork and wait for handle incoming connection
 	interestHandler := &interestHandler_s{wg}
-	wg.Add(1)
-	go ndn.LoopWaitHandleConnection(interestLn, interestHandler)
+	dataHandler := &dataHandler_s{wg}
+
+	/* 1. start interest server */
+	if interestLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.InterestPort)); err != nil {
+		ndn.ErrorLogger.Println("failed to listen on interest port", err)
+	}else {
+		// fork and wait for handle incoming connection
+		wg.Add(1)
+		go ndn.LoopWaitHandleConnection(interestLn, interestHandler)
+	}
 
 	/* 2. start data server */
-	dataLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.DataPort))
-	if err != nil {
-		log.Fatalln("falied to listen on data port:", err)
+	if dataLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.DataPort)); err != nil {
+		ndn.ErrorLogger.Println("failed to listen on data port", err)
+	}else {
+		// fork and wait for handle incoming connection
+		wg.Add(1)
+		go ndn.LoopWaitHandleConnection(dataLn, dataHandler)
 	}
-	dataHandler := &dataHandler_s{wg}
-	wg.Add(1)
-	go ndn.LoopWaitHandleConnection(dataLn, dataHandler)
 
 	for _, peer := range config.Agent.Peers {
 		fmt.Println("connecting to peer", peer)
+
 		/* 3. connect to peer interest server */
 		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.InterestPort)); err != nil {
 			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.InterestPort)
@@ -74,6 +76,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 			wg.Add(1)
 			go interestHandler.HandleConnection(conn)
 		}
+
 		/* 4. connect to peer data server */
 		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.DataPort)); err != nil {
 			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.DataPort)

@@ -3,6 +3,8 @@ package ndn
 import (
 	"strconv"
 	"net"
+	"os"
+	"log"
 )
 
 func JoinHostPort(host string, port int) string {
@@ -24,3 +26,5 @@ func LoopWaitHandleConnection(ln net.Listener, handler ConnectionHandler) {
 		}
 	}
 }
+
+var ErrorLogger = log.New(os.Stderr, "", log.LstdFlags)
