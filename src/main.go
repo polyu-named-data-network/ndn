@@ -1,10 +1,12 @@
 package main
 
 import (
+)
+import (
 	"fmt"
 	"ndn"
-	"ndn/agent"
 	"sync"
+	"ndn/agent"
 )
 
 func main() {

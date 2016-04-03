@@ -1,7 +1,7 @@
 package seed
 
-import "strconv"
+import "ndn"
 
-func Register(address Address) {
+func Register(address ndn.Address) {
 
 }
