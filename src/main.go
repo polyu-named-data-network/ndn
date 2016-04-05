@@ -1,15 +1,21 @@
 package main
 
-import (
-)
+import ()
 import (
 	"fmt"
 	"ndn"
-	"sync"
 	"ndn/agent"
+	"sync"
 )
 
+func test() {
+	fmt.Println("-----------------")
+
+	fmt.Println("-----------------")
+}
+
 func main() {
+	test()
 	fmt.Println("NDN service initializing")
 	config, err := ndn.CreateConfigFromFile("config.json")
 	if err != nil {

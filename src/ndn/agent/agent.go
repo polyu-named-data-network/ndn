@@ -17,21 +17,24 @@ type dataHandler_s struct {
 func (interestHandler_s) HandleError(err error) {
 	fmt.Println("falied to listen on incoming interest socket", err)
 }
-func (dataHandler_s)HandleError(err error) {
+func (dataHandler_s) HandleError(err error) {
 	fmt.Println("failed to listen on incoming data socket", err)
 }
 
 /* REMARK: this function is blocking */
-func (p interestHandler_s)HandleConnection(conn net.Conn) {
+func (p interestHandler_s) HandleConnection(conn net.Conn) {
 	p.wg.Add(1)
 	defer p.wg.Done()
+	fmt.Println("client connected to interest service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
+
 	//TODO
 }
 
 /* REMARK: this function is blocking */
-func (p dataHandler_s)HandleConnection(conn net.Conn) {
+func (p dataHandler_s) HandleConnection(conn net.Conn) {
 	p.wg.Add(1)
 	defer p.wg.Done()
+	fmt.Println("client connected to data service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
 	//TODO
 }
 
@@ -51,7 +54,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 	/* 1. start interest server */
 	if interestLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.InterestPort)); err != nil {
 		ndn.ErrorLogger.Println("failed to listen on interest port", err)
-	}else {
+	} else {
 		// fork and wait for handle incoming connection
 		wg.Add(1)
 		go ndn.LoopWaitHandleConnection(interestLn, interestHandler)
@@ -60,7 +63,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 	/* 2. start data server */
 	if dataLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.DataPort)); err != nil {
 		ndn.ErrorLogger.Println("failed to listen on data port", err)
-	}else {
+	} else {
 		// fork and wait for handle incoming connection
 		wg.Add(1)
 		go ndn.LoopWaitHandleConnection(dataLn, dataHandler)
@@ -72,7 +75,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 		/* 3. connect to peer interest server */
 		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.InterestPort)); err != nil {
 			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.InterestPort)
-		}else {
+		} else {
 			wg.Add(1)
 			go interestHandler.HandleConnection(conn)
 		}
@@ -80,7 +83,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
 		/* 4. connect to peer data server */
 		if conn, err := net.Dial(peer.Mode, ndn.JoinHostPort(peer.Host, peer.DataPort)); err != nil {
 			fmt.Printf("failed to connect to peer %v for interst (%v)\n", peer.Host, peer.DataPort)
-		}else {
+		} else {
 			wg.Add(1)
 			go dataHandler.HandleConnection(conn)
 		}

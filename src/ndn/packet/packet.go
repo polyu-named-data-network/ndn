@@ -1,31 +1,29 @@
 package packet
 
-type Packet interface {
-	GetType() string
+import "ndn/packet/returncode"
+
+type ContentName_s struct {
 }
 
-type InterestPacket struct {
-	Packet
-	Type string
+type InterestPacket_s struct {
+	ContentName ContentName_s
+	SeqNum      int64
+	AllowCache  bool
+	Selector    struct{}
 }
 
-type DataPacket struct {
-	Packet
-	Type string
+/* NAK */
+type InterestReturnPacket_s struct {
+	ContentName ContentName_s
+	SeqNum      int64
+	ReturnCode  returncode.Base
 }
 
-func (p *InterestPacket) GetType() string {
-	return p.Type
+type DataPacket_s struct {
+	ContentName ContentName_s
+	SeqNum      int64
+	AllowCache  bool
 }
 
-func (p *DataPacket) GetType() string {
-	return p.Type
-}
-
-func Create() Packet {
-	p := Packet{Type: "???"}
-	return p
-}
-func IsInterestPacket(packet Packet) bool {
-	return packet.GetType().Eq
+func test() {
 }

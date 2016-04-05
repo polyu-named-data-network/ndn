@@ -1,10 +1,10 @@
 package ndn
 
 import (
-	"strconv"
+	"log"
 	"net"
 	"os"
-	"log"
+	"strconv"
 )
 
 func JoinHostPort(host string, port int) string {
@@ -21,7 +21,7 @@ func LoopWaitHandleConnection(ln net.Listener, handler ConnectionHandler) {
 	for {
 		if conn, err := ln.Accept(); err != nil {
 			handler.HandleError(err)
-		}else {
+		} else {
 			handler.HandleConnection(conn)
 		}
 	}
