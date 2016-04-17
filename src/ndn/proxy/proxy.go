@@ -36,8 +36,12 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
             for err == nil {
               //TODO
               err = decoder.Decode(&packet)
-              if err != nil && err != io.EOF {
-                fmt.Println("failed to decode content, not service provider packet?", err)
+              if err != nil {
+                if err != io.EOF {
+                  fmt.Println("failed to decode content, not service provider packet?", err)
+                } else {
+                  fmt.Println("client disconnect from provider service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
+                }
               } else {
                 fmt.Println("received a servier provider packet", packet)
                 if _, port, err := net.SplitHostPort(conn.RemoteAddr().String()); err != nil {
