@@ -1,8 +1,16 @@
 package packet
 
-import "ndn/packet/returncode"
+import (
+	"crypto/rsa"
+	"ndn/packet/contentname"
+	"ndn/packet/returncode"
+	"time"
+)
 
 type ContentName_s struct {
+	Name  string
+	Type  contentname.Base
+	Param interface{}
 }
 
 type InterestPacket_s struct {
@@ -23,6 +31,12 @@ type DataPacket_s struct {
 	ContentName ContentName_s
 	SeqNum      int64
 	AllowCache  bool
+}
+type ServiceProviderPacket_s struct {
+	ContentName ContentName_s
+	ExpireTime  time.Time
+	AllowCache  bool
+	PublicKey   rsa.PublicKey
 }
 
 func test() {

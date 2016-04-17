@@ -7,15 +7,22 @@ import (
 )
 
 type Address struct {
+	Host         string
 	InterestPort int
 	DataPort     int
-	Host         string
 	Mode         string
 }
 type Config struct {
 	Agent struct {
 		Self  Address
 		Peers []Address
+	}
+	Proxy struct {
+		ServiceProvider struct {
+			Host string
+			Port int
+			Mode string
+		}
 	}
 }
 

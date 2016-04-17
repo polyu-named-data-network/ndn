@@ -14,5 +14,12 @@
         "Mode": "tcp"
       }
     ]
+  },
+  "Proxy": {
+    "ServiceProvider": {
+      "Host":"0.0.0.0",
+      "Port": 8125,
+      "Mode": "tcp"
+    }
   }
 }
