@@ -14,10 +14,11 @@ type ContentName_s struct {
 }
 
 type InterestPacket_s struct {
-  ContentName ContentName_s
-  SeqNum      int64
-  AllowCache  bool
-  Selector    struct{}
+  ContentName        ContentName_s
+  SeqNum             int64
+  AllowCache         bool
+  PublisherPublicKey rsa.PublicKey
+  //Selector    struct{}
 }
 
 /* NAK */

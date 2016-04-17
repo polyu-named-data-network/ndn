@@ -5,6 +5,7 @@ import (
   "fmt"
   "ndn"
   "ndn/agent"
+  "ndn/packet"
   "ndn/proxy"
   "sync"
 )
@@ -21,7 +22,13 @@ func test() {
   //xs = append(xs, 4, 5)
   //fmt.Println("xs", xs)
 
+  p1 := packet.InterestPacket_s{}
+  p2 := packet.InterestPacket_s{}
+  fmt.Println("is zero value always equal?", p1 == p2)
+  //fmt.Println("is zero value equal to null?", p1 == nil)
+
   fmt.Println("-----------------")
+  //panic(0)
 }
 
 func main() {

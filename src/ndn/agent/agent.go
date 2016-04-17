@@ -7,40 +7,6 @@ import (
   "sync"
 )
 
-type interestHandler_s struct {
-  wg *sync.WaitGroup
-}
-type dataHandler_s struct {
-  wg *sync.WaitGroup
-}
-type providerHandler_s struct {
-  wg *sync.WaitGroup
-}
-
-func (interestHandler_s) HandleError(err error) {
-  fmt.Println("falied to listen on incoming interest socket", err)
-}
-func (dataHandler_s) HandleError(err error) {
-  fmt.Println("failed to listen on incoming data socket", err)
-}
-
-/* REMARK: this function is blocking */
-func (p interestHandler_s) HandleConnection(conn net.Conn) {
-  p.wg.Add(1)
-  defer p.wg.Done()
-  fmt.Println("client connected to interest service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
-
-  //TODO
-}
-
-/* REMARK: this function is blocking */
-func (p dataHandler_s) HandleConnection(conn net.Conn) {
-  p.wg.Add(1)
-  defer p.wg.Done()
-  fmt.Println("client connected to data service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
-  //TODO
-}
-
 /*
   1. start interest server
   2. start data server
