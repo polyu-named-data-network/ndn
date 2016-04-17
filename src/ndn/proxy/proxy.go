@@ -1,8 +1,13 @@
 package proxy
 
 import (
+  //"encoding/json"
   "fmt"
   "ndn"
+  //"ndn/packet"
+  "encoding/json"
+  "io"
+  "ndn/packet"
   "net"
   "sync"
 )
@@ -24,12 +29,20 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
           fmt.Println("client connected to provider service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
           //TODO
           wg.Add(1)
-          go func(wg *sync.WaitGroup) {
+          go func(conn net.Conn, wg *sync.WaitGroup) {
             defer wg.Done()
-            for {
-              fmt.Println("waiting for packet")
+            decoder := json.NewDecoder(conn)
+            var packet packet.ServiceProviderPacket_s
+            for err == nil {
+              //TODO
+              err = decoder.Decode(&packet)
+              if err != nil && err != io.EOF {
+                fmt.Println("failed to decode content, not service provider packet?", err)
+              } else {
+                fmt.Println("received a servier provider packet", packet)
+              }
             }
-          }(&wg)
+          }(conn, wg)
         }
       }
     }()
