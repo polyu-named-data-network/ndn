@@ -7,15 +7,19 @@ import (
   "ndn/agent"
   "ndn/proxy"
   "sync"
-  "time"
 )
 
 func test() {
   fmt.Println("-----------------")
 
-  fmt.Println("now is ", time.Now())
-  fmt.Println("nano", time.Now().Nanosecond())
-  fmt.Println("unix nano", time.Now().UnixNano())
+  //fmt.Println("now is ", time.Now())
+  //fmt.Println("nano", time.Now().Nanosecond())
+  //fmt.Println("unix nano", time.Now().UnixNano())
+
+  //var xs = []int{1, 2, 3}
+  //fmt.Println("xs", xs)
+  //xs = append(xs, 4, 5)
+  //fmt.Println("xs", xs)
 
   fmt.Println("-----------------")
 }

@@ -30,12 +30,11 @@ type InterestReturnPacket_s struct {
 type DataPacket_s struct {
   ContentName ContentName_s
   SeqNum      int64
+  ExpireTime  time.Time
   AllowCache  bool
 }
 type ServiceProviderPacket_s struct {
   ContentName ContentName_s
-  ExpireTime  time.Time
-  AllowCache  bool
   PublicKey   rsa.PublicKey
 }
 

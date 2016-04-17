@@ -1,14 +1,14 @@
 package proxy
 
 import (
-  //"encoding/json"
-  "fmt"
-  "ndn"
-  //"ndn/packet"
   "encoding/json"
+  "fmt"
   "io"
+  "ndn"
+  "ndn/fib"
   "ndn/packet"
   "net"
+  "strconv"
   "sync"
 )
 
@@ -40,6 +40,16 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
                 fmt.Println("failed to decode content, not service provider packet?", err)
               } else {
                 fmt.Println("received a servier provider packet", packet)
+                if _, port, err := net.SplitHostPort(conn.RemoteAddr().String()); err != nil {
+                  fmt.Println("failed to parse port from remote address", err)
+                } else {
+                  port, err := strconv.Atoi(port)
+                  if err != nil {
+                    fmt.Println("failed to parse port from string", err)
+                  } else {
+                    fib.Register(packet.ContentName, packet.PublicKey, port)
+                  }
+                }
               }
             }
           }(conn, wg)
