@@ -4,12 +4,12 @@ import (
   "encoding/json"
   "fmt"
   "io"
-  "ndn"
-  "ndn/fib"
-  "ndn/packet"
   "net"
   "strconv"
   "sync"
+  "bitbucket.org/polyu-named-data-network/ndn"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/fib"
 )
 
 func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {

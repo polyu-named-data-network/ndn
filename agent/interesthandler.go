@@ -4,10 +4,10 @@ import (
   "encoding/json"
   "fmt"
   "io"
-  "ndn/fib"
-  "ndn/packet"
   "net"
   "sync"
+  "bitbucket.org/polyu-named-data-network/ndn/fib"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
 )
 
 type interestHandler_s struct {

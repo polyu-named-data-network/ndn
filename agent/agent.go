@@ -2,9 +2,9 @@ package agent
 
 import (
   "fmt"
-  "ndn"
   "net"
   "sync"
+  "bitbucket.org/polyu-named-data-network/ndn"
 )
 
 /*

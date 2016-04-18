@@ -3,9 +3,9 @@ package fib
 
 import (
   "crypto/rsa"
-  "ndn/packet"
-  "ndn/packet/contentname"
   "sync"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
 )
 
 var lock = sync.Mutex{}
