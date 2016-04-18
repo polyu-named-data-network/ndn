@@ -1,10 +1,10 @@
 package packet
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
   "crypto/rsa"
   "time"
-  "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
-  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
 )
 
 type ContentName_s struct {

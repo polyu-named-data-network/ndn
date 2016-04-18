@@ -1,9 +1,9 @@
 package config
 
 import (
-  "os"
-  "fmt"
   "encoding/json"
+  "fmt"
+  "os"
 )
 
 type Address struct {

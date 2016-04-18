@@ -1,13 +1,13 @@
 package agent
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/fib"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
   "encoding/json"
   "fmt"
   "io"
   "net"
   "sync"
-  "bitbucket.org/polyu-named-data-network/ndn/fib"
-  "bitbucket.org/polyu-named-data-network/ndn/packet"
 )
 
 type interestHandler_s struct {
@@ -36,6 +36,7 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
           fmt.Println("failed to decode incoming interest packet", err)
         }
       } else {
+        fmt.Println("received interest packet")
         /*  find data, response if found, otherwise do forwarding
          *    1. lookup CS
          *    2. lookup PIT

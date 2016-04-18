@@ -1,12 +1,12 @@
 package main
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/agent"
+  "bitbucket.org/polyu-named-data-network/ndn/config"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/proxy"
   "fmt"
   "sync"
-  "bitbucket.org/polyu-named-data-network/ndn/packet"
-  "bitbucket.org/polyu-named-data-network/ndn/config"
-  "bitbucket.org/polyu-named-data-network/ndn/agent"
-  "bitbucket.org/polyu-named-data-network/ndn/proxy"
 )
 
 func test() {

@@ -1,6 +1,7 @@
 package utils
 
 import (
+  "fmt"
   "log"
   "net"
   "os"
@@ -27,4 +28,29 @@ func LoopWaitHandleConnection(ln net.Listener, handler ConnectionHandler) {
   }
 }
 
-var ErrorLogger = log.New(os.Stderr, "", log.LstdFlags)
+var errorLogger = log.New(os.Stderr, "", log.LstdFlags)
+var InfoVerbose = true
+var DebugVerbose = true
+var ErrorVerbose = true
+var WarnVerbose = true
+
+func Info(xs ...interface{}) {
+  if InfoVerbose {
+    fmt.Println(xs)
+  }
+}
+func Debug(xs ...interface{}) {
+  if DebugVerbose {
+    fmt.Println(xs)
+  }
+}
+func Error(xs ...interface{}) {
+  if ErrorVerbose {
+    errorLogger.Println(xs)
+  }
+}
+func Warn(xs ...interface{}) {
+  if WarnVerbose {
+    errorLogger.Println(xs)
+  }
+}

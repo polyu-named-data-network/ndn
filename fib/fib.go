@@ -2,10 +2,10 @@
 package fib
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "crypto/rsa"
   "sync"
-  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
-  "bitbucket.org/polyu-named-data-network/ndn/packet"
 )
 
 var lock = sync.Mutex{}
