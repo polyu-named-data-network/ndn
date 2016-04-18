@@ -1,4 +1,4 @@
-package ndn
+package main
 
 import (
   "fmt"
