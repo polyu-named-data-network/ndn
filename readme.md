@@ -18,3 +18,19 @@ This program is designed on top of TCP/IP, it serve as the relay
    2. loop and wait for request (/callback?)
 ### Exact content lookup
 ### Fuzzy content lookup
+
+## package structure
+### config
+ - seed
+
+### network
+ - agent
+ - proxy
+
+### protocol
+ - packet
+
+### data
+ - Content Store (CS)
+ - Pending Interest Table (PIT)
+ - Forwarding Information Base (FIB)
