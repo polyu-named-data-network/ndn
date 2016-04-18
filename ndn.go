@@ -4,6 +4,7 @@ import (
   "fmt"
   "sync"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/config"
   "bitbucket.org/polyu-named-data-network/ndn/agent"
   "bitbucket.org/polyu-named-data-network/ndn/proxy"
 )
@@ -32,7 +33,7 @@ func test() {
 func main() {
   test()
   fmt.Println("NDN service initializing")
-  config, err := CreateConfigFromFile("config.json")
+  config, err := config.CreateConfigFromFile("config.json")
   if err != nil {
     fmt.Println("failed to load config", err)
     return

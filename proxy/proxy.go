@@ -7,16 +7,17 @@ import (
   "net"
   "strconv"
   "sync"
-  "bitbucket.org/polyu-named-data-network/ndn"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/fib"
+  "bitbucket.org/polyu-named-data-network/ndn/config"
+  "bitbucket.org/polyu-named-data-network/ndn/utils"
 )
 
-func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
+func Init(config config.Config, wg *sync.WaitGroup) (err error) {
   fmt.Println("proxy init start")
   server := config.Proxy.ServiceProvider
-  if providerLn, err := net.Listen(server.Mode, ndn.JoinHostPort(server.Host, server.Port)); err != nil {
-    ndn.ErrorLogger.Println("failed to listen on Service Provider port", err)
+  if providerLn, err := net.Listen(server.Mode, utils.JoinHostPort(server.Host, server.Port)); err != nil {
+    utils.ErrorLogger.Println("failed to listen on Service Provider port", err)
   } else {
     fmt.Println("listening for incoming service provider socket connection")
     wg.Add(1)
@@ -24,7 +25,7 @@ func Init(config ndn.Config, wg *sync.WaitGroup) (err error) {
       defer wg.Done()
       for {
         if conn, err := providerLn.Accept(); err != nil {
-          ndn.ErrorLogger.Println("failed to listen on incoming provider socker", err)
+          utils.ErrorLogger.Println("failed to listen on incoming provider socker", err)
         } else {
           fmt.Println("client connected to provider service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
           //TODO

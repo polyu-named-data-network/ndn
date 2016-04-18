@@ -1,9 +1,9 @@
-package ndn
+package config
 
 import (
-  "encoding/json"
-  "fmt"
   "os"
+  "fmt"
+  "encoding/json"
 )
 
 type Address struct {
