@@ -3,7 +3,6 @@ package main
 import (
   "bitbucket.org/polyu-named-data-network/ndn/agent"
   "bitbucket.org/polyu-named-data-network/ndn/config"
-  "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/proxy"
   "fmt"
   "sync"
@@ -21,9 +20,9 @@ func test() {
   //xs = append(xs, 4, 5)
   //fmt.Println("xs", xs)
 
-  p1 := packet.InterestPacket_s{}
-  p2 := packet.InterestPacket_s{}
-  fmt.Println("is zero value always equal?", p1 == p2)
+  //p1 := packet.InterestPacket_s{}
+  //p2 := packet.InterestPacket_s{}
+  //fmt.Println("is zero value always equal?", p1 == p2)
   //fmt.Println("is zero value equal to null?", p1 == nil)
 
   fmt.Println("-----------------")
