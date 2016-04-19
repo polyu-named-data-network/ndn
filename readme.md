@@ -36,8 +36,11 @@ This program is designed on top of TCP/IP, it serve as the relay
  - Forwarding Information Base (FIB)
 
 ## Stages
-### Stage 1
+### Version 1
  - workable PIT
  - workable FIB
  - Content Name (Exact match only)
  - not support asking peer yet (if not found in FIB)
+### Version 1.5
+ - add support to CS
+ - add hook count
