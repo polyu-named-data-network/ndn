@@ -28,6 +28,7 @@ type DataPacket_s struct {
   ExpireTime         time.Time
   AllowCache         bool
   PublisherPublicKey rsa.PublicKey
+  ContentData        []byte
 }
 type ServiceProviderPacket_s struct {
   ContentName ContentName_s
@@ -41,5 +42,6 @@ func (p DataPacket_s) New(seqNum int64) DataPacket_s {
     ExpireTime:         p.ExpireTime,
     AllowCache:         p.AllowCache,
     PublisherPublicKey: p.PublisherPublicKey,
+    ContentData:        p.ContentData,
   }
 }
