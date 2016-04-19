@@ -9,7 +9,6 @@ import (
   "github.com/aabbcc1241/goutils/log"
   "io"
   "net"
-  "strconv"
   "sync"
 )
 
@@ -24,14 +23,18 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
     go func() {
       defer wg.Done()
       for {
-        if conn, err := providerLn.Accept(); err != nil {
+        if providerConn, err := providerLn.Accept(); err != nil {
           log.Error.Println("failed to listen on incoming provider socker", err)
         } else {
-          log.Info.Println("client connected to provider service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
+          log.Info.Println("client connected to provider service", providerConn.RemoteAddr().Network(), providerConn.RemoteAddr().String())
           //TODO
           wg.Add(1)
           go func(conn net.Conn, wg *sync.WaitGroup) {
-            defer wg.Done()
+            defer func() {
+              wg.Done()
+              conn.Close()
+              fib.UnRegister(conn)
+            }()
             decoder := json.NewDecoder(conn)
             var packet packet.ServiceProviderPacket_s
             for err == nil {
@@ -45,19 +48,11 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
                 }
               } else {
                 log.Info.Println("received a servier provider packet", packet)
-                if _, port, err := net.SplitHostPort(conn.RemoteAddr().String()); err != nil {
-                  log.Error.Println("failed to parse port from remote address", err)
-                } else {
-                  port, err := strconv.Atoi(port)
-                  if err != nil {
-                    log.Error.Println("failed to parse port from string", err)
-                  } else {
-                    fib.Register(packet.ContentName, packet.PublicKey, port)
-                  }
-                }
+                fib.Register(packet.ContentName, packet.PublicKey, conn)
+
               }
             }
-          }(conn, wg)
+          }(providerConn, wg)
         }
       }
     }()

@@ -5,6 +5,8 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/config"
   "bitbucket.org/polyu-named-data-network/ndn/proxy"
   "fmt"
+  mlog "github.com/aabbcc1241/goutils/log"
+  "log"
   "sync"
 )
 
@@ -27,6 +29,10 @@ func test() {
 
   fmt.Println("-----------------")
   //panic(0)
+}
+
+func init() {
+  mlog.Init(true, true, true, log.Ltime|log.Lshortfile)
 }
 
 func main() {

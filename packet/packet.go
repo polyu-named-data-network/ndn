@@ -8,9 +8,10 @@ import (
 )
 
 type ContentName_s struct {
-  Name  string
-  Type  contentname.Base
-  Param interface{}
+  Name           string
+  Type           contentname.Base
+  Param          interface{}
+  AcceptDataType []string
 }
 
 type InterestPacket_s struct {
@@ -29,10 +30,11 @@ type InterestReturnPacket_s struct {
 }
 
 type DataPacket_s struct {
-  ContentName ContentName_s
-  SeqNum      int64
-  ExpireTime  time.Time
-  AllowCache  bool
+  ContentName        ContentName_s
+  SeqNum             int64
+  ExpireTime         time.Time
+  AllowCache         bool
+  PublisherPublicKey rsa.PublicKey
 }
 type ServiceProviderPacket_s struct {
   ContentName ContentName_s
