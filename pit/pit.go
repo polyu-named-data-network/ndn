@@ -45,7 +45,7 @@ func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
   switch in_packet.ContentName.Type {
   case contentname.ExactMatch:
     pendingInterests := exactMatchTable[in_packet.ContentName.Name]
-    for i := len(pendingInterests); i >= 0; i-- {
+    for i := len(pendingInterests) - 1; i >= 0; i-- {
       current := pendingInterests[i]
       /* keyMatched && seqMatched */
       if (current.PublisherPublicKey == utils.ZeroKey || current.PublisherPublicKey == in_packet.PublisherPublicKey) && (current.AllowCache || current.SeqNum == in_packet.SeqNum) {
