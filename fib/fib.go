@@ -41,54 +41,35 @@ func UnRegister(conn net.Conn) {
     }
   }
 }
-func Register(contentName packet.ContentName_s, publicKey rsa.PublicKey, conn net.Conn) (err error) {
-  if _, port, err := net.SplitHostPort(conn.RemoteAddr().String()); err != nil {
-    log.Error.Println("failed to parse port from remote address", err)
-    return err
-  } else {
-    port, err := strconv.Atoi(port)
-    if err != nil {
-      log.Error.Println("failed to parse port from string", err)
-      return err
-    } else {
-      lock.Lock()
-      defer lock.Unlock()
-
-      /* save connection */
-      //TODO detect old encoder, remove it, discard it from PIT
-      log.Info.Println("FIB registered port:", port, "contentname:", contentName)
-      portEncoderMap[port] = *json.NewEncoder(conn)
-
-      /* save name */
-      switch contentName.Type {
-      case contentname.ExactMatch:
-
-        publicKeyPortsMap, found := exactMatchTable[contentName.Name]
-        if !found {
-          publicKeyPortsMap = make(map[rsa.PublicKey][]int)
-          exactMatchTable[contentName.Name] = publicKeyPortsMap
-        }
-        ports, found := publicKeyPortsMap[publicKey]
-        if !found {
-          publicKeyPortsMap[publicKey] = []int{port}
-        } else {
-          publicKeyPortsMap[publicKey] = append(ports, port)
-        }
-        break
-      case contentname.LongestMatch:
-        break
-      case contentname.FuzzyMatch:
-        break
-      case contentname.Custom:
-      default:
-
-      }
-      return err
+func Register(port int, packet packet.ServiceProviderPacket_s) {
+  switch packet.ContentName.Type {
+  case contentname.ExactMatch:
+    var publicKeyPortsMap publicKeyPortsMap_t
+    var found bool
+    lock.Lock()
+    defer lock.Unlock()
+    publicKeyPortsMap, found = exactMatchTable[packet.ContentName.Name]
+    if !found {
+      log.Debug.Println("not found, publicKeyPortsMap", publicKeyPortsMap)
+      publicKeyPortsMap = make(publicKeyPortsMap_t)
+      exactMatchTable[packet.ContentName.Name] = publicKeyPortsMap
     }
+    var ports []int
+    ports, found = publicKeyPortsMap[packet.PublicKey]
+    if !found {
+      log.Debug.Println("not found, ports", ports)
+      ports = []int{port}
+    } else {
+      ports = append(ports, port)
+    }
+    publicKeyPortsMap[packet.PublicKey] = ports
+    return
+  default:
+    log.Error.Println("not impl")
+    return
   }
 }
-
-func Lookup(contentName packet.ContentName_s, publicKey rsa.PublicKey) (port int, found bool) {
+func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (port int, found bool) {
   lock.Lock()
   defer lock.Unlock()
   zeroKey := rsa.PublicKey{}

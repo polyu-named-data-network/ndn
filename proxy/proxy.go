@@ -4,11 +4,13 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/config"
   "bitbucket.org/polyu-named-data-network/ndn/fib"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
   "encoding/json"
   "github.com/aabbcc1241/goutils/log"
   "io"
   "net"
+  "strconv"
   "sync"
 )
 
@@ -26,33 +28,38 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
         if providerConn, err := providerLn.Accept(); err != nil {
           log.Error.Println("failed to listen on incoming provider socker", err)
         } else {
+          defer providerConn.Close()
           log.Info.Println("client connected to provider service", providerConn.RemoteAddr().Network(), providerConn.RemoteAddr().String())
-          //TODO
-          wg.Add(1)
-          go func(conn net.Conn, wg *sync.WaitGroup) {
-            defer func() {
-              wg.Done()
-              conn.Close()
-              fib.UnRegister(conn)
-            }()
-            decoder := json.NewDecoder(conn)
-            var packet packet.ServiceProviderPacket_s
-            for err == nil {
-              //TODO
-              err = decoder.Decode(&packet)
-              if err != nil {
-                if err != io.EOF {
-                  log.Error.Println("failed to decode content, not service provider packet?", err)
-                } else {
-                  log.Info.Println("client disconnect from provider service", conn.RemoteAddr().Network(), conn.RemoteAddr().String())
+          if _, port_string, err := net.SplitHostPort(providerConn.RemoteAddr().String()); err != nil {
+            log.Error.Println("failed to parse port from remote address", err)
+            return
+          } else {
+            port, err := strconv.Atoi(port_string)
+            if err != nil {
+              log.Error.Println("failed to parse port from string", err)
+              return
+            } else {
+              serviceProviderPacketDecoder := json.NewDecoder(providerConn)
+              var serviceProviderPacket packet.ServiceProviderPacket_s
+              portmaps.AddInterestPacketEncoder(port, json.NewEncoder(providerConn))
+              defer portmaps.RemoveInterestEncoder(port)
+              var err error
+              wg.Add(1)
+              go func() {
+                defer wg.Done()
+                for err == nil {
+                  err = serviceProviderPacketDecoder.Decode(serviceProviderPacket)
+                  if err != nil {
+                    if err != io.EOF {
+                      log.Error.Println("failed to decode, not service provider packet?", err)
+                    }
+                  } else {
+                    fib.Register(port, serviceProviderPacket)
+                  }
                 }
-              } else {
-                log.Info.Println("received a servier provider packet", packet)
-                fib.Register(packet.ContentName, packet.PublicKey, conn)
-
-              }
+              }()
             }
-          }(providerConn, wg)
+          }
         }
       }
     }()

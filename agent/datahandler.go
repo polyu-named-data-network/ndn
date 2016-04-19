@@ -50,8 +50,8 @@ func (p dataHandler_s) HandleConnection(conn net.Conn) {
         if err != nil {
           log.Error.Println("failed to get pending ports", err)
         } else {
-          for _,port:=range ports{
-            pit.
+          for _, port := range ports {
+            log.Error.Println("not impl, working here", port)
           }
         }
       }

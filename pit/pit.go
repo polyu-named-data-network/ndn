@@ -5,12 +5,21 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
 )
 
+type name_interest_map_t map[string]packet.InterestPacket_s
+type pending_interest_s struct {
+  SeqNum             int64
+  PublisherPublicKey rsa.PublicKey
+}
+
+//type seqnum_
 var exactMatchTable = make(map[string][]int)
 
-func Register(port int, contentName packet.ContentName_s) {
+func Register(port int, packet packet.InterestPacket_s) {
+  contentName := packet.ContentName
   log.Debug.Println("register interest packet, port:", port, "contentName:", contentName)
   switch contentName.Type {
   case contentname.ExactMatch:
@@ -28,7 +37,7 @@ func Register(port int, contentName packet.ContentName_s) {
 
   }
 }
-func GetPendingPorts(contentName packet.ContentName_s) (ports []int, err error) {
+func GetPendingPorts(contentName contentname.ContentName_s) (ports []int, err error) {
   switch contentName.Type {
   case contentname.ExactMatch:
     var found bool

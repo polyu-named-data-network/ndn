@@ -1,18 +1,11 @@
 package packet
 
 import (
-  "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  . "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
   "crypto/rsa"
   "time"
 )
-
-type ContentName_s struct {
-  Name           string
-  Type           contentname.Base
-  Param          interface{}
-  AcceptDataType []string
-}
 
 type InterestPacket_s struct {
   ContentName        ContentName_s
