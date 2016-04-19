@@ -2,9 +2,10 @@
 package fib
 
 import (
-  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
+  "bitbucket.org/polyu-named-data-network/ndn/utils"
   "crypto/rsa"
   "encoding/json"
   "github.com/aabbcc1241/goutils/log"
@@ -16,14 +17,11 @@ import (
 type publicKeyPortsMap_t map[rsa.PublicKey][]int
 
 var lock = sync.Mutex{}
-var portEncoderMap = make(map[int]json.Encoder)
 var exactMatchTable = make(map[string]publicKeyPortsMap_t)
 
 func UnRegister(conn net.Conn) {
   _, port_string, _ := net.SplitHostPort(conn.RemoteAddr().String())
   port, _ := strconv.Atoi(port_string)
-  /* delete from port map */
-  delete(portEncoderMap, port)
   /* delete from name map */
   for name, publicKeyPortsMap := range exactMatchTable {
     for publicKey, ports := range publicKeyPortsMap {
@@ -50,18 +48,11 @@ func Register(port int, packet packet.ServiceProviderPacket_s) {
     defer lock.Unlock()
     publicKeyPortsMap, found = exactMatchTable[packet.ContentName.Name]
     if !found {
-      log.Debug.Println("not found, publicKeyPortsMap", publicKeyPortsMap)
       publicKeyPortsMap = make(publicKeyPortsMap_t)
       exactMatchTable[packet.ContentName.Name] = publicKeyPortsMap
     }
-    var ports []int
-    ports, found = publicKeyPortsMap[packet.PublicKey]
-    if !found {
-      log.Debug.Println("not found, ports", ports)
-      ports = []int{port}
-    } else {
-      ports = append(ports, port)
-    }
+    ports := publicKeyPortsMap[packet.PublicKey]
+    ports = append(ports, port)
     publicKeyPortsMap[packet.PublicKey] = ports
     return
   default:
@@ -72,7 +63,6 @@ func Register(port int, packet packet.ServiceProviderPacket_s) {
 func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (port int, found bool) {
   lock.Lock()
   defer lock.Unlock()
-  zeroKey := rsa.PublicKey{}
   switch contentName.Type {
   case contentname.ExactMatch:
     var publicKeyPortsMap publicKeyPortsMap_t
@@ -86,7 +76,7 @@ func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (por
      *    if not defined, lookup by any //TODO implement a rating algorithm
      */
     ports := make([]int, 0)
-    if publicKey == zeroKey {
+    if publicKey == utils.ZeroKey {
       for _, v := range publicKeyPortsMap {
         ports = append(ports, v...)
       }
@@ -102,7 +92,7 @@ func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (por
       log.Debug.Println("the port is not found")
       return
     }
-    //TODO implement a rating algorithm according to loading (last/avg responding time)
+    //TODO implement a rating algorithm according to loading (last/avg responding time), rather than just pick the first one
     //  similar to the equation for round trip time { (1-alpha) * oldVal + alpha * newVal }
     port = ports[0]
     break
@@ -117,12 +107,9 @@ func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (por
   return
 }
 func Forward(port int, packet packet.InterestPacket_s) (err error) {
-  if encoder, found := portEncoderMap[port]; found {
-    //callback.Apply(packet)
-    log.Debug.Println("found encoder on port", port)
+  var encoder *json.Encoder
+  if encoder, err = portmaps.GetInterestPacketEncoder(port); err == nil {
     encoder.Encode(packet)
-    return
-  } else {
-    return errortype.PortNotRegistered
   }
+  return
 }

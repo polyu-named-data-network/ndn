@@ -42,18 +42,19 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
               serviceProviderPacketDecoder := json.NewDecoder(providerConn)
               var serviceProviderPacket packet.ServiceProviderPacket_s
               portmaps.AddInterestPacketEncoder(port, json.NewEncoder(providerConn))
-              defer portmaps.RemoveInterestEncoder(port)
+              defer portmaps.RemoveInterestPacketEncoder(port)
               var err error
               wg.Add(1)
               go func() {
                 defer wg.Done()
                 for err == nil {
-                  err = serviceProviderPacketDecoder.Decode(serviceProviderPacket)
+                  err = serviceProviderPacketDecoder.Decode(&serviceProviderPacket)
                   if err != nil {
                     if err != io.EOF {
                       log.Error.Println("failed to decode, not service provider packet?", err)
                     }
                   } else {
+                    log.Debug.Println("received service provider packet", serviceProviderPacket)
                     fib.Register(port, serviceProviderPacket)
                   }
                 }

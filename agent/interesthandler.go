@@ -94,6 +94,7 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
       }
     } else {
       log.Debug.Println("not found in FIB")
+      log.Error.Println("not impl")
     }
   }
 }

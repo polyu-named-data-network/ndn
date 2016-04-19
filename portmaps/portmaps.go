@@ -1,26 +1,53 @@
 package portmaps
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "encoding/json"
   "sync"
 )
 
 var interestPacket_encoder_map = make(map[int]*json.Encoder)
-var interestPacketEncoderLock = sync.Mutex{}
+var interestPacket_encoder_lock = sync.Mutex{}
+
+var dataPacket_encoder_map = make(map[int]*json.Encoder)
+var dataPacket_encoder_lock = sync.Mutex{}
 
 func AddInterestPacketEncoder(port int, encoder *json.Encoder) {
-  interestPacketEncoderLock.Lock()
-  defer interestPacketEncoderLock.Unlock()
+  interestPacket_encoder_lock.Lock()
+  defer interestPacket_encoder_lock.Unlock()
   interestPacket_encoder_map[port] = encoder
 }
-func RemoveInterestEncoder(port int) {
-  interestPacketEncoderLock.Lock()
-  defer interestPacketEncoderLock.Unlock()
+func RemoveInterestPacketEncoder(port int) {
+  interestPacket_encoder_lock.Lock()
+  defer interestPacket_encoder_lock.Unlock()
   delete(interestPacket_encoder_map, port)
 }
-func GetInterestEncoder(port int) (encoder *json.Encoder, found bool) {
-  interestPacketEncoderLock.Lock()
-  defer interestPacketEncoderLock.Unlock()
-  encoder, found = interestPacket_encoder_map[port]
-  return
+func GetInterestPacketEncoder(port int) (encoder *json.Encoder, err error) {
+  interestPacket_encoder_lock.Lock()
+  defer interestPacket_encoder_lock.Unlock()
+  if encoder, found := interestPacket_encoder_map[port]; found {
+    return encoder, nil
+  } else {
+    return nil, errortype.PortNotRegistered
+  }
+}
+
+func AddDataPacketEncoder(port int, encoder *json.Encoder) {
+  dataPacket_encoder_lock.Lock()
+  defer dataPacket_encoder_lock.Unlock()
+  dataPacket_encoder_map[port] = encoder
+}
+func RemoveDataPacketEncoder(port int) {
+  dataPacket_encoder_lock.Lock()
+  defer dataPacket_encoder_lock.Unlock()
+  delete(dataPacket_encoder_map, port)
+}
+func GetDataPacketEncoder(port int) (encoder *json.Encoder, err error) {
+  dataPacket_encoder_lock.Lock()
+  defer dataPacket_encoder_lock.Unlock()
+  if encoder, found := dataPacket_encoder_map[port]; found {
+    return encoder, nil
+  } else {
+    return nil, errortype.PortNotRegistered
+  }
 }

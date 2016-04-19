@@ -2,7 +2,6 @@ package utils
 
 import (
   "crypto/rsa"
-  "math/big"
   "net"
   "strconv"
 )
@@ -26,3 +25,5 @@ func LoopWaitHandleConnection(ln net.Listener, handler ConnectionHandler) {
     }
   }
 }
+
+var ZeroKey = rsa.PublicKey{}

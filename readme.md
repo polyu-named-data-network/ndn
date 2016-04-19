@@ -34,3 +34,10 @@ This program is designed on top of TCP/IP, it serve as the relay
  - Content Store (CS)
  - Pending Interest Table (PIT)
  - Forwarding Information Base (FIB)
+
+## Stages
+### Stage 1
+ - workable PIT
+ - workable FIB
+ - Content Name (Exact match only)
+ - not support asking peer yet (if not found in FIB)

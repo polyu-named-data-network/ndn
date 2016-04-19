@@ -12,7 +12,7 @@ type InterestPacket_s struct {
   SeqNum             int64
   AllowCache         bool
   PublisherPublicKey rsa.PublicKey
-  //Selector    struct{}
+  DataPort           int
 }
 
 /* NAK */
@@ -34,5 +34,12 @@ type ServiceProviderPacket_s struct {
   PublicKey   rsa.PublicKey
 }
 
-func test() {
+func (p DataPacket_s) New(seqNum int64) DataPacket_s {
+  return DataPacket_s{
+    ContentName:        p.ContentName,
+    SeqNum:             seqNum,
+    ExpireTime:         p.ExpireTime,
+    AllowCache:         p.AllowCache,
+    PublisherPublicKey: p.PublisherPublicKey,
+  }
 }

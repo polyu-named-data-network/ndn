@@ -1,6 +1,7 @@
 package main
 
 import (
+  "crypto/rsa"
   "fmt"
   "reflect"
 )
@@ -49,6 +50,8 @@ func compare_string() {
   s2 := "1"
   fmt.Println("is string same?", s1 == s2)
 }
+func compare_zero() {
+  fmt.Println("is same", rsa.PublicKey{} == rsa.PublicKey{})
+}
 func main() {
-  compare_pointer()
 }

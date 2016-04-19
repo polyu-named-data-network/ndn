@@ -5,53 +5,62 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
+  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
+  "bitbucket.org/polyu-named-data-network/ndn/utils"
   "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
 )
 
-type name_interest_map_t map[string]packet.InterestPacket_s
 type pending_interest_s struct {
   SeqNum             int64
+  AllowCache         bool
   PublisherPublicKey rsa.PublicKey
+  DataPort           int
+  InterestReturnPort int
 }
 
-//type seqnum_
-var exactMatchTable = make(map[string][]int)
+var exactMatchTable = make(map[string][]pending_interest_s)
 
 func Register(port int, packet packet.InterestPacket_s) {
   contentName := packet.ContentName
   log.Debug.Println("register interest packet, port:", port, "contentName:", contentName)
   switch contentName.Type {
   case contentname.ExactMatch:
-    ports, found := exactMatchTable[contentName.Name]
-    if found {
-      ports = append(ports, port)
-      log.Debug.Println("added to port list", ports)
-    } else {
-      ports = []int{port}
-      log.Debug.Println("created new port list")
-    }
-    exactMatchTable[contentName.Name] = ports
+    pendingInterests := exactMatchTable[contentName.Name]
+    pendingInterests = append(pendingInterests, pending_interest_s{
+      SeqNum:             packet.SeqNum,
+      AllowCache:         packet.AllowCache,
+      PublisherPublicKey: packet.PublisherPublicKey,
+      DataPort:           packet.DataPort,
+      InterestReturnPort: port,
+    })
+    log.Debug.Println("new list", pendingInterests)
+    exactMatchTable[contentName.Name] = pendingInterests
     break
   default:
 
   }
 }
-func GetPendingPorts(contentName contentname.ContentName_s) (ports []int, err error) {
-  switch contentName.Type {
+func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
+  switch in_packet.ContentName.Type {
   case contentname.ExactMatch:
-    var found bool
-    ports, found = exactMatchTable[contentName.Name]
-    if !found {
-      err = errortype.ContentNameNotFound
+    pendingInterests := exactMatchTable[in_packet.ContentName.Name]
+    for i := len(pendingInterests); i >= 0; i-- {
+      current := pendingInterests[i]
+      /* keyMatched && seqMatched */
+      if (current.PublisherPublicKey == utils.ZeroKey || current.PublisherPublicKey == in_packet.PublisherPublicKey) && (current.AllowCache || current.SeqNum == in_packet.SeqNum) {
+        /* delete from PIT */
+        pendingInterests = append(pendingInterests[:i], pendingInterests[i+1:]...)
+        /* do forward */
+        if encoder, err := portmaps.GetDataPacketEncoder(current.DataPort); err != nil {
+          return err
+        } else {
+          encoder.Encode(in_packet.New(current.SeqNum))
+        }
+      }
     }
-    exactMatchTable[contentName.Name] = ports
     return
   default:
-    err = errortype.ContentTypeNotSupported
-    return
+    return errortype.ContentTypeNotSupported
   }
-}
-func Forward(ports []int, packet packet.DataPacket_s) {
-
 }

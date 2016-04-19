@@ -18,8 +18,9 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
   log.Info.Println("agent init start")
   server := config.Agent.Self
 
-  interestHandler := &interestHandler_s{wg}
-  dataHandler := &dataHandler_s{wg}
+  var interestHandler, dataHandler utils.ConnectionHandler
+  interestHandler = interestHandler_s{wg}
+  dataHandler = dataHandler_s{wg}
 
   /* 1. start interest server */
   if interestLn, err := net.Listen(server.Mode, utils.JoinHostPort(server.Host, server.InterestPort)); err != nil {
