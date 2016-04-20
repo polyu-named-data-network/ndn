@@ -34,18 +34,20 @@ func handleConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
     for err == nil {
       log.Debug.Println("waiting for incoming packet")
       var in_packet interface{}
-      err = decoder.Decode(in_packet)
+      err = decoder.Decode(&in_packet)
       if err != nil {
-        log.Error.Println("failed to parse incoming message into json", err)
-        break
+        log.Error.Println("failed to parse incoming message into json", in_packet, err)
+        continue
       }
+      log.Debug.Println("received packet", in_packet)
       packet_i, err2 := packet.ParsePacket(in_packet)
       if err2 != nil {
         err = err2
-        log.Error.Println("failed to parse packet into packet struct", err)
-        break
+        log.Error.Println("failed to parse packet into packet struct", in_packet, err)
+        continue
       }
       packetType := reflect.ValueOf(packet_i).Type()
+      log.Debug.Println("packet parsed to", packetType, packet_i)
       switch packetType {
       case reflect.ValueOf(packet.InterestPacket_s{}).Type():
         err = OnInterestPacketReceived(port, packet_i.(packet.InterestPacket_s))

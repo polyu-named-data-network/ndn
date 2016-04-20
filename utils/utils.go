@@ -1,7 +1,7 @@
 package utils
 
 import (
-  "crypto/rsa"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
   "net"
   "strconv"
 )
@@ -26,4 +26,4 @@ func LoopWaitHandleConnection(ln net.Listener, handler ConnectionHandler) {
   }
 }
 
-var ZeroKey = rsa.PublicKey{}
+var ZeroKey = packet.PublicKey_s{}

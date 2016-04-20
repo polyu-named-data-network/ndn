@@ -6,15 +6,21 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
   "crypto/rsa"
   "github.com/aabbcc1241/goutils/lang"
+  "github.com/aabbcc1241/goutils/log"
+  "math/big"
   "time"
 )
 
+type PublicKey_s struct {
+  N string
+  E int
+}
 type InterestPacket_s struct {
   InterestPacket_s   bool
   ContentName        ContentName_s
-  SeqNum             int64
+  SeqNum             uint64
   AllowCache         bool
-  PublisherPublicKey rsa.PublicKey
+  PublisherPublicKey PublicKey_s
   DataPort           int
 }
 
@@ -22,26 +28,44 @@ type InterestPacket_s struct {
 type InterestReturnPacket_s struct {
   InterestReturnPacket_s bool
   ContentName            ContentName_s
-  SeqNum                 int64
+  SeqNum                 uint64
   ReturnCode             returncode.Base
 }
 
 type DataPacket_s struct {
   DataPacket_s       bool
   ContentName        ContentName_s
-  SeqNum             int64
+  SeqNum             uint64
   ExpireTime         time.Time
   AllowCache         bool
-  PublisherPublicKey rsa.PublicKey
+  PublisherPublicKey PublicKey_s
   ContentData        []byte
 }
 type ServiceProviderPacket_s struct {
   ServiceProviderPacket_s bool
   ContentName             ContentName_s
-  PublicKey               rsa.PublicKey
+  PublicKey               PublicKey_s
 }
 
-func (p DataPacket_s) New(seqNum int64) DataPacket_s {
+func (p PublicKey_s) ToPublicKey() rsa.PublicKey {
+  publicKey := rsa.PublicKey{}
+  publicKey.N = big.NewInt(0)
+  publicKey.N.UnmarshalText([]byte(p.N))
+  publicKey.E = p.E
+  return publicKey
+}
+func ToPublicKey_s(p rsa.PublicKey) (publicKey PublicKey_s, err error) {
+  if bs, err2 := p.N.MarshalText(); err != nil {
+    err = err2
+  } else {
+    publicKey = PublicKey_s{
+      N: string(bs),
+      E: p.E,
+    }
+  }
+  return
+}
+func (p DataPacket_s) New(seqNum uint64) DataPacket_s {
   return DataPacket_s{
     ContentName:        p.ContentName,
     SeqNum:             seqNum,
@@ -52,10 +76,39 @@ func (p DataPacket_s) New(seqNum int64) DataPacket_s {
   }
 }
 
-func (s *InterestPacket_s) FillStruct(i interface{}) error {
+func (s *PublicKey_s) FillStruct(i interface{}) error {
   m := i.(map[string]interface{})
   for k, v := range m {
     if err := lang.SetField(s, k, v); err != nil {
+      return err
+    }
+  }
+  return nil
+}
+func (s *InterestPacket_s) FillStruct(i interface{}) error {
+  m := i.(map[string]interface{})
+  for k, v := range m {
+    var err error
+    switch k {
+    case "ContentName":
+      contentName := ContentName_s{}
+      err = contentName.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, contentName)
+      }
+      break
+    case "PublicKey":
+    case "PublisherPublicKey":
+      publicKey := PublicKey_s{}
+      err = publicKey.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, publicKey)
+      }
+      break
+    default:
+      err = lang.SetField(s, k, v)
+    }
+    if err != nil {
       return err
     }
   }
@@ -64,7 +117,27 @@ func (s *InterestPacket_s) FillStruct(i interface{}) error {
 func (s *InterestReturnPacket_s) FillStruct(i interface{}) error {
   m := i.(map[string]interface{})
   for k, v := range m {
-    if err := lang.SetField(s, k, v); err != nil {
+    var err error
+    switch k {
+    case "ContentName":
+      contentName := ContentName_s{}
+      err = contentName.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, contentName)
+      }
+      break
+    case "PublicKey":
+    case "PublisherPublicKey":
+      publicKey := PublicKey_s{}
+      err = publicKey.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, publicKey)
+      }
+      break
+    default:
+      err = lang.SetField(s, k, v)
+    }
+    if err != nil {
       return err
     }
   }
@@ -73,7 +146,27 @@ func (s *InterestReturnPacket_s) FillStruct(i interface{}) error {
 func (s *DataPacket_s) FillStruct(i interface{}) error {
   m := i.(map[string]interface{})
   for k, v := range m {
-    if err := lang.SetField(s, k, v); err != nil {
+    var err error
+    switch k {
+    case "ContentName":
+      contentName := ContentName_s{}
+      err = contentName.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, contentName)
+      }
+      break
+    case "PublicKey":
+    case "PublisherPublicKey":
+      publicKey := PublicKey_s{}
+      err = publicKey.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, publicKey)
+      }
+      break
+    default:
+      err = lang.SetField(s, k, v)
+    }
+    if err != nil {
       return err
     }
   }
@@ -82,10 +175,31 @@ func (s *DataPacket_s) FillStruct(i interface{}) error {
 func (s *ServiceProviderPacket_s) FillStruct(i interface{}) error {
   m := i.(map[string]interface{})
   for k, v := range m {
-    if err := lang.SetField(s, k, v); err != nil {
+    var err error
+    switch k {
+    case "ContentName":
+      contentName := ContentName_s{}
+      err = contentName.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, contentName)
+      }
+      break
+    case "PublicKey":
+    case "PublisherPublicKey":
+      publicKey := PublicKey_s{}
+      err = publicKey.FillStruct(v)
+      if err == nil {
+        err = lang.SetField(s, k, publicKey)
+      }
+      break
+    default:
+      err = lang.SetField(s, k, v)
+    }
+    if err != nil {
       return err
     }
   }
+  log.Debug.Println("sevice packet parsed", s)
   return nil
 }
 func ParsePacket(i interface{}) (interface{}, error) {

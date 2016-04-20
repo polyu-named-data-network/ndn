@@ -7,14 +7,13 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
-  "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
 )
 
 type pending_interest_s struct {
-  SeqNum             int64
+  SeqNum             uint64
   AllowCache         bool
-  PublisherPublicKey rsa.PublicKey
+  PublisherPublicKey packet.PublicKey_s
   DataPort           int
   InterestReturnPort int
 }
@@ -24,7 +23,7 @@ var exactMatchTable = make(map[string][]pending_interest_s)
 func Register(port int, packet packet.InterestPacket_s) {
   contentName := packet.ContentName
   log.Debug.Println("register interest packet, port:", port, "contentName:", contentName)
-  switch contentName.Type {
+  switch contentName.ContentType {
   case contentname.ExactMatch:
     pendingInterests := exactMatchTable[contentName.Name]
     pendingInterests = append(pendingInterests, pending_interest_s{
@@ -42,7 +41,7 @@ func Register(port int, packet packet.InterestPacket_s) {
   }
 }
 func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
-  switch in_packet.ContentName.Type {
+  switch in_packet.ContentName.ContentType {
   case contentname.ExactMatch:
     pendingInterests := exactMatchTable[in_packet.ContentName.Name]
     for i := len(pendingInterests) - 1; i >= 0; i-- {

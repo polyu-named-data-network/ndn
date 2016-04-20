@@ -6,14 +6,13 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
-  "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
   "net"
   "strconv"
   "sync"
 )
 
-type publicKeyPortsMap_t map[rsa.PublicKey][]int
+type publicKeyPortsMap_t map[packet.PublicKey_s][]int
 
 var lock = sync.Mutex{}
 var exactMatchTable = make(map[string]publicKeyPortsMap_t)
@@ -39,7 +38,7 @@ func UnRegister(conn net.Conn) {
   }
 }
 func Register(port int, packet packet.ServiceProviderPacket_s) {
-  switch packet.ContentName.Type {
+  switch packet.ContentName.ContentType {
   case contentname.ExactMatch:
     var publicKeyPortsMap publicKeyPortsMap_t
     var found bool
@@ -55,14 +54,14 @@ func Register(port int, packet packet.ServiceProviderPacket_s) {
     publicKeyPortsMap[packet.PublicKey] = ports
     return
   default:
-    log.Error.Println("not impl")
+    log.Error.Println("not impl", packet)
     return
   }
 }
-func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (port int, found bool) {
+func Lookup(contentName contentname.ContentName_s, publicKey packet.PublicKey_s) (port int, found bool) {
   lock.Lock()
   defer lock.Unlock()
-  switch contentName.Type {
+  switch contentName.ContentType {
   case contentname.ExactMatch:
     var publicKeyPortsMap publicKeyPortsMap_t
     publicKeyPortsMap, found = exactMatchTable[contentName.Name]
