@@ -1,6 +1,7 @@
-package agent
+package network
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/fib"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/pit"
@@ -58,7 +59,7 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
   //TODO
 }
 
-func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
+func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) (err error) {
   log.Info.Println("received interest port", port, "packet", in_packet)
   /*  find data, response if found, otherwise do forwarding
    *    1. lookup CS
@@ -95,10 +96,8 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
     } else {
       log.Debug.Println("not found in FIB")
       log.Error.Println("not impl")
+      err = errortype.NotImpl
     }
   }
-}
-
-func OnDataPacketReceived(in_packet packet.DataPacket_s) {
-
+  return
 }

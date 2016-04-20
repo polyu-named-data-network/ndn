@@ -41,6 +41,8 @@ This program is designed on top of TCP/IP, it serve as the relay
  - workable FIB
  - Content Name (Exact match only)
  - not support asking peer yet (if not found in FIB)
-### Version 1.5
+### Version 2
+ - use one connection for generic json exchange
+### Version further
  - add support to CS
  - add hook count

@@ -1,9 +1,8 @@
 package main
 
 import (
-  "bitbucket.org/polyu-named-data-network/ndn/agent"
   "bitbucket.org/polyu-named-data-network/ndn/config"
-  "bitbucket.org/polyu-named-data-network/ndn/proxy"
+  "bitbucket.org/polyu-named-data-network/ndn/network"
   "fmt"
   mlog "github.com/aabbcc1241/goutils/log"
   "log"
@@ -22,8 +21,7 @@ func main() {
     return
   }
   wg := sync.WaitGroup{}
-  agent.Init(config, &wg)
-  proxy.Init(config, &wg)
+  network.Init(config, &wg)
   fmt.Println("NDN service running")
   wg.Wait()
   fmt.Println("NDN service stopped")

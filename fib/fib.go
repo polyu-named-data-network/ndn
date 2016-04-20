@@ -7,7 +7,6 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
   "crypto/rsa"
-  "encoding/json"
   "github.com/aabbcc1241/goutils/log"
   "net"
   "strconv"
@@ -107,9 +106,5 @@ func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (por
   return
 }
 func Forward(port int, packet packet.InterestPacket_s) (err error) {
-  var encoder *json.Encoder
-  if encoder, err = portmaps.GetInterestPacketEncoder(port); err == nil {
-    encoder.Encode(packet)
-  }
-  return
+  return portmaps.Encode(port, packet)
 }

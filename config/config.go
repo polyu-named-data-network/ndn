@@ -7,23 +7,13 @@ import (
 )
 
 type Address struct {
-  Host         string
-  InterestPort int
-  DataPort     int
-  Mode         string
+  Host string
+  Port int
+  Mode string
 }
 type Config struct {
-  Agent struct {
-    Self  Address
-    Peers []Address
-  }
-  Proxy struct {
-    ServiceProvider struct {
-      Host string
-      Port int
-      Mode string
-    }
-  }
+  Self  Address
+  Peers []Address
 }
 
 func CreateConfigFromFile(filename string) (config Config, err error) {

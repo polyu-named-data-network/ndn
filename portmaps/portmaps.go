@@ -6,48 +6,33 @@ import (
   "sync"
 )
 
-var interestPacket_encoder_map = make(map[int]*json.Encoder)
-var interestPacket_encoder_lock = sync.Mutex{}
+var locksLock = sync.Mutex{}
+var portLocks = make(map[int]sync.Mutex)
+var encoders = make(map[int]*json.Encoder)
 
-var dataPacket_encoder_map = make(map[int]*json.Encoder)
-var dataPacket_encoder_lock = sync.Mutex{}
+func AddEncoder(port int, encoder *json.Encoder) {
+  locksLock.Lock()
+  defer locksLock.Unlock()
+  portLocks[port] = sync.Mutex{}
+  encoders[port] = encoder
+}
+func RemoveEncoder(port int) {
+  locksLock.Lock()
+  defer locksLock.Unlock()
+  delete(portLocks, port)
+  delete(encoders, port)
+}
 
-func AddInterestPacketEncoder(port int, encoder *json.Encoder) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  interestPacket_encoder_map[port] = encoder
-}
-func RemoveInterestPacketEncoder(port int) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  delete(interestPacket_encoder_map, port)
-}
-func GetInterestPacketEncoder(port int) (encoder *json.Encoder, err error) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  if encoder, found := interestPacket_encoder_map[port]; found {
-    return encoder, nil
-  } else {
-    return nil, errortype.PortNotRegistered
+func Encode(port int, packet interface{}) error {
+  locksLock.Lock()
+  lock := portLocks[port]
+  locksLock.Unlock()
+  lock.Lock()
+  defer lock.Unlock()
+  encoder, found := encoders[port]
+  if !found {
+    return errortype.PortNotRegistered
   }
-}
-
-func AddDataPacketEncoder(port int, encoder *json.Encoder) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  dataPacket_encoder_map[port] = encoder
-}
-func RemoveDataPacketEncoder(port int) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  delete(dataPacket_encoder_map, port)
-}
-func GetDataPacketEncoder(port int) (encoder *json.Encoder, err error) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  if encoder, found := dataPacket_encoder_map[port]; found {
-    return encoder, nil
-  } else {
-    return nil, errortype.PortNotRegistered
-  }
+  encoder.Encode(packet)
+  return nil
 }

@@ -52,10 +52,9 @@ func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
         /* delete from PIT */
         pendingInterests = append(pendingInterests[:i], pendingInterests[i+1:]...)
         /* do forward */
-        if encoder, err := portmaps.GetDataPacketEncoder(current.DataPort); err != nil {
-          return err
-        } else {
-          encoder.Encode(in_packet.New(current.SeqNum))
+        err = portmaps.Encode(current.DataPort, in_packet.New(current.SeqNum))
+        if err != nil {
+          log.Error.Printf("failed to send data packet to port %v in PIT, %v", current.DataPort, err)
         }
       }
     }
