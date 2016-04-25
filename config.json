@@ -8,7 +8,19 @@
     },
     "Peers": [
       {
-        "Host": "127.0.0.1",
+        "Host": "172.17.0.2",
+        "InterestPort": 8123,
+        "DataPort": 8124,
+        "Mode": "tcp"
+      },
+      {
+        "Host": "172.17.0.3",
+        "InterestPort": 8123,
+        "DataPort": 8124,
+        "Mode": "tcp"
+      },
+      {
+        "Host": "172.17.0.4",
         "InterestPort": 8123,
         "DataPort": 8124,
         "Mode": "tcp"
