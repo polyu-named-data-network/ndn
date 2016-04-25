@@ -16,12 +16,14 @@ var data_lock = sync.Mutex{}
 var data_lock_map = make(map[int]*sync.Mutex)
 
 func AddInterestPacketEncoder(port int, encoder *json.Encoder) {
+  log.Debug.Println("add interest packet encoder on port", port)
   interest_lock.Lock()
   defer interest_lock.Unlock()
   interest_encoder_map[port] = encoder
   interest_lock_map[port] = &sync.Mutex{}
 }
 func RemoveInterestPacketEncoder(port int) {
+  log.Debug.Println("remove interest packet encoder on port", port)
   interest_lock.Lock()
   defer interest_lock.Unlock()
   delete(interest_encoder_map, port)
@@ -34,13 +36,17 @@ func SendInterestPacket(port int, packet packet.InterestPacket_s) error {
 }
 func BroadcastInterestPacket(excludePort int, packet packet.InterestPacket_s) {
   wg := sync.WaitGroup{}
+  log.Debug.Println("broadcase interest")
+  //log.Debug.Println("interest_lock_map", interest_lock_map)
   for port := range interest_lock_map {
+    //log.Debug.Printf("excludePort:%v, port:%v\n", excludePort, port)
     if port == excludePort {
       continue
     }
     wg.Add(1)
     go func(port int) {
       defer wg.Done()
+      log.Debug.Println("forwarding interest packet to port", port)
       if err := SendInterestPacket(port, packet); err != nil {
         log.Error.Println(err)
       }

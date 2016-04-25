@@ -39,6 +39,8 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
       go func() {
         defer conn.Close()
         defer p.wg.Done()
+        portmaps.AddInterestPacketEncoder(in_port, json.NewEncoder(conn))
+        defer portmaps.RemoveInterestPacketEncoder(in_port)
         in := json.NewDecoder(conn)
         var in_packet packet.InterestPacket_s
         var err error
@@ -59,8 +61,8 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
   //TODO
 }
 
-func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
-  log.Info.Println("received interest port", port, "packet", in_packet)
+func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) {
+  log.Info.Println("received interest port", in_port, "packet", in_packet)
   /*  find data, response if found, otherwise do forwarding
    *    1. lookup CS
    *    2. lookup PIT
@@ -85,8 +87,7 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
   } else {
     /* 3. lookup FIB */
     log.Debug.Println("checking FIB")
-    port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey)
-    if fibFound {
+    if port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey); fibFound {
       log.Debug.Println("found in FIB, port:", port)
       if err := portmaps.SendInterestPacket(port, in_packet); err != nil {
         log.Debug.Println("failed to forward on port", port, err)
@@ -95,8 +96,8 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
       }
     } else {
       log.Debug.Println("not found in FIB")
-      portmaps.BroadcastInterestPacket(port, in_packet)
-      log.Error.Println("not impl")
+      portmaps.BroadcastInterestPacket(in_port, in_packet)
+      //TODO use strategy in excel
     }
     //TODO save in PIT to avoid loop
   }

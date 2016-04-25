@@ -20,7 +20,7 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
   if providerLn, err := net.Listen(server.Mode, utils.JoinHostPort(server.Host, server.Port)); err != nil {
     log.Error.Println("failed to listen on Service Provider port", err)
   } else {
-    log.Info.Println("listening for incoming service provider socket connection")
+    log.Info.Printf("listening for service provider socket connection (%v)", server.Port)
     wg.Add(1)
     go func() {
       defer wg.Done()
