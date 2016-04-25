@@ -39,6 +39,7 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
               log.Error.Println("failed to parse port from string", err)
               return
             } else {
+              defer fib.UnRegister(port)
               serviceProviderPacketDecoder := json.NewDecoder(providerConn)
               var serviceProviderPacket packet.ServiceProviderPacket_s
               portmaps.AddInterestPacketEncoder(port, json.NewEncoder(providerConn))

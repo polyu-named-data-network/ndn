@@ -4,6 +4,7 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/fib"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/pit"
+  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "encoding/json"
   "github.com/aabbcc1241/goutils/log"
   "io"
@@ -87,15 +88,17 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
     port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey)
     if fibFound {
       log.Debug.Println("found in FIB, port:", port)
-      if err := fib.Forward(port, in_packet); err != nil {
+      if err := portmaps.SendInterestPacket(port, in_packet); err != nil {
         log.Debug.Println("failed to forward on port", port, err)
       } else {
         pit.Register(port, in_packet)
       }
     } else {
       log.Debug.Println("not found in FIB")
+      portmaps.BroadcastInterestPacket(port, in_packet)
       log.Error.Println("not impl")
     }
+    //TODO save in PIT to avoid loop
   }
 }
 

@@ -1,53 +1,67 @@
 package portmaps
 
 import (
-  "bitbucket.org/polyu-named-data-network/ndn/errortype"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
   "encoding/json"
+  "github.com/aabbcc1241/goutils/log"
   "sync"
 )
 
-var interestPacket_encoder_map = make(map[int]*json.Encoder)
-var interestPacket_encoder_lock = sync.Mutex{}
+var interest_encoder_map = make(map[int]*json.Encoder)
+var interest_lock = sync.Mutex{}
+var interest_lock_map = make(map[int]*sync.Mutex)
 
-var dataPacket_encoder_map = make(map[int]*json.Encoder)
-var dataPacket_encoder_lock = sync.Mutex{}
+var data_encoder_map = make(map[int]*json.Encoder)
+var data_lock = sync.Mutex{}
+var data_lock_map = make(map[int]*sync.Mutex)
 
 func AddInterestPacketEncoder(port int, encoder *json.Encoder) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  interestPacket_encoder_map[port] = encoder
+  interest_lock.Lock()
+  defer interest_lock.Unlock()
+  interest_encoder_map[port] = encoder
+  interest_lock_map[port] = &sync.Mutex{}
 }
 func RemoveInterestPacketEncoder(port int) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  delete(interestPacket_encoder_map, port)
+  interest_lock.Lock()
+  defer interest_lock.Unlock()
+  delete(interest_encoder_map, port)
+  delete(interest_lock_map, port)
 }
-func GetInterestPacketEncoder(port int) (encoder *json.Encoder, err error) {
-  interestPacket_encoder_lock.Lock()
-  defer interestPacket_encoder_lock.Unlock()
-  if encoder, found := interestPacket_encoder_map[port]; found {
-    return encoder, nil
-  } else {
-    return nil, errortype.PortNotRegistered
+func SendInterestPacket(port int, packet packet.InterestPacket_s) error {
+  interest_lock_map[port].Lock()
+  defer interest_lock_map[port].Unlock()
+  return interest_encoder_map[port].Encode(packet)
+}
+func BroadcastInterestPacket(excludePort int, packet packet.InterestPacket_s) {
+  wg := sync.WaitGroup{}
+  for port := range interest_lock_map {
+    if port == excludePort {
+      continue
+    }
+    wg.Add(1)
+    go func(port int) {
+      defer wg.Done()
+      if err := SendInterestPacket(port, packet); err != nil {
+        log.Error.Println(err)
+      }
+    }(port)
   }
+  wg.Wait()
 }
 
 func AddDataPacketEncoder(port int, encoder *json.Encoder) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  dataPacket_encoder_map[port] = encoder
+  data_lock.Lock()
+  defer data_lock.Unlock()
+  data_encoder_map[port] = encoder
+  data_lock_map[port] = &sync.Mutex{}
 }
 func RemoveDataPacketEncoder(port int) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  delete(dataPacket_encoder_map, port)
+  data_lock.Lock()
+  defer data_lock.Unlock()
+  delete(data_encoder_map, port)
 }
-func GetDataPacketEncoder(port int) (encoder *json.Encoder, err error) {
-  dataPacket_encoder_lock.Lock()
-  defer dataPacket_encoder_lock.Unlock()
-  if encoder, found := dataPacket_encoder_map[port]; found {
-    return encoder, nil
-  } else {
-    return nil, errortype.PortNotRegistered
-  }
+func SendDataPacket(port int, packet packet.DataPacket_s) error {
+  data_lock_map[port].Lock()
+  defer data_lock_map[port].Unlock()
+  return data_encoder_map[port].Encode(packet)
 }

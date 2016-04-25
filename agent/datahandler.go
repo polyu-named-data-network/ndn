@@ -40,6 +40,7 @@ func (p dataHandler_s) HandleConnection(conn net.Conn) {
     defer conn.Close()
     in := json.NewDecoder(conn)
     portmaps.AddDataPacketEncoder(port, json.NewEncoder(conn))
+    defer portmaps.RemoveDataPacketEncoder(port)
     var in_packet packet.DataPacket_s
     var err error
     for err == nil {

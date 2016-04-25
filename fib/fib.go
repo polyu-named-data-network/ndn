@@ -4,13 +4,9 @@ package fib
 import (
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
-  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
   "crypto/rsa"
-  "encoding/json"
   "github.com/aabbcc1241/goutils/log"
-  "net"
-  "strconv"
   "sync"
 )
 
@@ -19,15 +15,13 @@ type publicKeyPortsMap_t map[rsa.PublicKey][]int
 var lock = sync.Mutex{}
 var exactMatchTable = make(map[string]publicKeyPortsMap_t)
 
-func UnRegister(conn net.Conn) {
-  _, port_string, _ := net.SplitHostPort(conn.RemoteAddr().String())
-  port, _ := strconv.Atoi(port_string)
+func UnRegister(port int) {
   /* delete from name map */
   for name, publicKeyPortsMap := range exactMatchTable {
     for publicKey, ports := range publicKeyPortsMap {
-      for k, v := range ports {
-        if v == port {
-          ports = append(ports[:k], ports[k+1:]...)
+      for i := len(ports) - 1; i > 0; i-- {
+        if ports[i] == port {
+          ports = append(ports[:i], ports[i+1:]...)
           if len(ports) == 0 {
             delete(publicKeyPortsMap, publicKey)
             if len(publicKeyPortsMap) == 0 {
@@ -103,13 +97,6 @@ func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (por
   case contentname.Custom:
   default:
 
-  }
-  return
-}
-func Forward(port int, packet packet.InterestPacket_s) (err error) {
-  var encoder *json.Encoder
-  if encoder, err = portmaps.GetInterestPacketEncoder(port); err == nil {
-    encoder.Encode(packet)
   }
   return
 }
