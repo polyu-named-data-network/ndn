@@ -101,7 +101,3 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) {
     //TODO save in PIT to avoid loop
   }
 }
-
-func OnDataPacketReceived(in_packet packet.DataPacket_s) {
-
-}
