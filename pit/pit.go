@@ -61,6 +61,29 @@ func UnRegister(port int) {
 		}
 	}
 }
+func AddToListIfExist(in_port int, in_packet packet.InterestPacket_s) bool {
+	contentName := in_packet.ContentName
+	switch contentName.ContentType {
+	case contentname.ExactMatch:
+		exactMatchTable_lock.Lock()
+		defer exactMatchTable_lock.Unlock()
+		ps, found := exactMatchTable[contentName.Name]
+		if !found {
+			return false
+		}
+		p := pending_interest_s{
+			SeqNum:             in_packet.SeqNum,
+			AllowCache:         in_packet.AllowCache,
+			PublisherPublicKey: in_packet.PublisherPublicKey,
+			InterestPort:       in_port,
+		}
+		exactMatchTable[contentName.Name] = append(ps, p)
+		return true
+	default:
+		log.Error.Println("not impl")
+		return false
+	}
+}
 func HandleDataPacket(in_packet packet.DataPacket_s) (err error) {
 	switch in_packet.ContentName.ContentType {
 	case contentname.ExactMatch:
@@ -79,6 +102,11 @@ func HandleDataPacket(in_packet packet.DataPacket_s) (err error) {
 					log.Error.Printf("failed to send data packet to port %v in PIT, %v", current.InterestPort, err)
 				}
 			}
+		}
+		if len(pendingInterests) == 0 {
+			delete(exactMatchTable, in_packet.ContentName.Name)
+		} else {
+			exactMatchTable[in_packet.ContentName.Name] = pendingInterests
 		}
 		return
 	default:

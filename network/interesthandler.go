@@ -1,6 +1,7 @@
 package network
 
 import (
+	"bitbucket.org/polyu-named-data-network/ndn/cs"
 	"bitbucket.org/polyu-named-data-network/ndn/fib"
 	"bitbucket.org/polyu-named-data-network/ndn/packet"
 	"bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
@@ -71,61 +72,66 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
 
 	/* 1. lookup CS */
 	log.Debug.Println("checking CS")
-	csFound := false
+	if cachedPacket, csFound := cs.Get(in_packet.ContentName); csFound {
+		log.Debug.Println("found in CS")
+		portmaps.SendDataPacket(in_port, cachedPacket.New(in_packet.SeqNum))
+		return
+	}
+
 	log.Debug.Println("not found in CS")
 
 	/* 2. lookup PIT */
-	// TODO look up and insert at the same time to skip second lookup time when inserting
-	log.Debug.Println("checking PIT")
-	pitFound := false
-	log.Debug.Println("not found in PIT")
-
-	if csFound {
-
-	} else if pitFound {
-		pit.Register(in_port, in_packet)
+	if in_packet.AllowCache {
+		log.Debug.Println("checking PIT")
+		if pitFound := pit.AddToListIfExist(in_port, in_packet); pitFound {
+			log.Debug.Println("found in PIT")
+			return
+		}
+		log.Debug.Println("not found in PIT")
 	} else {
-		/* 3. lookup FIB */
-		log.Debug.Println("checking FIB")
-		if out_port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey); fibFound {
-			log.Debug.Println("found in FIB, port:", out_port)
+		log.Debug.Println("not allow cache, skipped PIT checking")
+	}
+
+	/* 3. lookup FIB */
+	log.Debug.Println("checking FIB")
+	if out_port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey); fibFound {
+		log.Debug.Println("found in FIB, port:", out_port)
+		if err := fib.Forward(out_port, in_packet); err != nil {
+			log.Error.Println("failed to forward on port", out_port, err)
+		} else {
+			pit.Register(in_port, in_packet)
+		}
+	} else {
+		log.Debug.Println("not found in FIB")
+		//TODO replace by the strategy in excel
+		sentCount := 0
+		ports := portmaps.AllPorts()
+		//log.Debug.Println("ports", ports)
+		for _, out_port := range ports {
+			//log.Debug.Println("out_port", out_port)
+			if out_port == in_port {
+				continue
+			}
 			if err := fib.Forward(out_port, in_packet); err != nil {
 				log.Error.Println("failed to forward on port", out_port, err)
 			} else {
-				pit.Register(in_port, in_packet)
+				sentCount += 1
 			}
-		} else {
-			log.Debug.Println("not found in FIB")
-			//TODO replace by the strategy in excel
-			sentCount := 0
-			ports := portmaps.AllPorts()
-			//log.Debug.Println("ports", ports)
-			for _, out_port := range ports {
-				//log.Debug.Println("out_port", out_port)
-				if out_port == in_port {
-					continue
-				}
-				if err := fib.Forward(out_port, in_packet); err != nil {
-					log.Error.Println("failed to forward on port", out_port, err)
-				} else {
-					sentCount += 1
-				}
-			}
-			if sentCount > 0 {
-				log.Debug.Printf("forwarded interest to %v peer(s)\n", sentCount)
-				//portmaps.SendInterestPacket(in_port, in_packet)
-				pit.Register(in_port, in_packet)
-			} else {
-				log.Debug.Println("interest not resolved, no available peer, sending NAK")
-				portmaps.SendInterestReturnPacket(in_port, packet.InterestReturnPacket_s{
-					ContentName: in_packet.ContentName,
-					SeqNum:      in_packet.SeqNum,
-					ReturnCode:  returncode.NoRoute,
-				})
-			}
-			//log.Error.Println("not impl")
-			//err = errortype.NotImpl
 		}
+		if sentCount > 0 {
+			log.Debug.Printf("forwarded interest to %v peer(s)\n", sentCount)
+			//portmaps.SendInterestPacket(in_port, in_packet)
+			pit.Register(in_port, in_packet)
+		} else {
+			log.Debug.Println("interest not resolved, no available peer, sending NAK")
+			portmaps.SendInterestReturnPacket(in_port, packet.InterestReturnPacket_s{
+				ContentName: in_packet.ContentName,
+				SeqNum:      in_packet.SeqNum,
+				ReturnCode:  returncode.NoRoute,
+			})
+		}
+		//log.Error.Println("not impl")
+		//err = errortype.NotImpl
 	}
 	return
 }

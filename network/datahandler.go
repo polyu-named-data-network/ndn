@@ -1,6 +1,7 @@
 package network
 
 import (
+	"bitbucket.org/polyu-named-data-network/ndn/cs"
 	"bitbucket.org/polyu-named-data-network/ndn/packet"
 	"bitbucket.org/polyu-named-data-network/ndn/pit"
 	"github.com/aabbcc1241/goutils/log"
@@ -11,7 +12,7 @@ func OnDataPacketReceived(in_port int, in_packet packet.DataPacket_s) (err error
 	/*
 	 *    1. lookup PIT, forward to pending ports
 	 *    2. store in CS if allow cache
-	 *    3. update FIB if needed
+	 *    3. update FIB if needed TODO
 	 */
 
 	/* 1. lookup PIT */
@@ -22,8 +23,7 @@ func OnDataPacketReceived(in_port int, in_packet packet.DataPacket_s) (err error
 
 	/* 2. store in CS if allow cache */
 	if in_packet.AllowCache {
-		log.Error.Println("not impl: store into CS")
-		//return errortype.NotImpl
+		cs.Store(in_packet)
 	}
 	return
 }
