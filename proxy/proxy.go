@@ -43,10 +43,10 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
               serviceProviderPacketDecoder := json.NewDecoder(providerConn)
               var serviceProviderPacket packet.ServiceProviderPacket_s
               portmaps.AddInterestPacketEncoder(port, json.NewEncoder(providerConn))
-              defer portmaps.RemoveInterestPacketEncoder(port)
               var err error
               wg.Add(1)
               go func() {
+                defer portmaps.RemoveInterestPacketEncoder(port)
                 defer wg.Done()
                 for err == nil {
                   err = serviceProviderPacketDecoder.Decode(&serviceProviderPacket)
