@@ -9,8 +9,6 @@ import (
 	"bitbucket.org/polyu-named-data-network/ndn/utils"
 	"crypto/rsa"
 	"github.com/aabbcc1241/goutils/log"
-	"net"
-	"strconv"
 	"sync"
 )
 
@@ -19,9 +17,8 @@ type publicKeyPortsMap_t map[rsa.PublicKey][]int
 var lock = sync.Mutex{}
 var exactMatchTable = make(map[string]publicKeyPortsMap_t)
 
-func UnRegister(conn net.Conn) {
-	_, port_string, _ := net.SplitHostPort(conn.RemoteAddr().String())
-	port, _ := strconv.Atoi(port_string)
+func UnRegister(port int) {
+	log.Info.Println("unregister FBI on port", port)
 	/* delete from name map */
 	for name, publicKeyPortsMap := range exactMatchTable {
 		for publicKey, ports := range publicKeyPortsMap {

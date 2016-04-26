@@ -3,8 +3,10 @@ package network
 import (
 	"bitbucket.org/polyu-named-data-network/ndn/config"
 	"bitbucket.org/polyu-named-data-network/ndn/errortype"
+	"bitbucket.org/polyu-named-data-network/ndn/fib"
 	"bitbucket.org/polyu-named-data-network/ndn/packet"
 	"bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
+	"bitbucket.org/polyu-named-data-network/ndn/pit"
 	"bitbucket.org/polyu-named-data-network/ndn/portmaps"
 	"bitbucket.org/polyu-named-data-network/ndn/utils"
 	"encoding/json"
@@ -31,9 +33,14 @@ func handleConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
 	portmaps.AddEncoder(port, json.NewEncoder(conn))
 	wg.Add(1)
 	go func() {
-		defer portmaps.RemoveEncoder(port)
-		defer conn.Close()
-		defer wg.Done()
+		defer func() {
+			log.Debug.Println("close connection", conn.RemoteAddr().String())
+			fib.UnRegister(port)
+			pit.UnRegister(port)
+			portmaps.RemoveEncoder(port)
+			conn.Close()
+			wg.Done()
+		}()
 		for err == nil {
 			log.Debug.Println("waiting for incoming packet")
 			var in_packet packet.GenericPacket_s
@@ -49,7 +56,6 @@ func handleConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
 				log.Error.Println("failed to handle generic packet", err)
 			}
 		}
-		log.Debug.Println("close connection", conn.RemoteAddr().String())
 	}()
 	return
 }

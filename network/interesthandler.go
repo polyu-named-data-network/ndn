@@ -75,6 +75,7 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
 	log.Debug.Println("not found in CS")
 
 	/* 2. lookup PIT */
+	// TODO look up and insert at the same time to skip second lookup time when inserting
 	log.Debug.Println("checking PIT")
 	pitFound := false
 	log.Debug.Println("not found in PIT")
@@ -82,7 +83,7 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
 	if csFound {
 
 	} else if pitFound {
-
+		pit.Register(in_port, in_packet)
 	} else {
 		/* 3. lookup FIB */
 		log.Debug.Println("checking FIB")
@@ -115,6 +116,7 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
 				//portmaps.SendInterestPacket(in_port, in_packet)
 				pit.Register(in_port, in_packet)
 			} else {
+				log.Debug.Println("interest not resolved, no available peer, sending NAK")
 				portmaps.SendInterestReturnPacket(in_port, packet.InterestReturnPacket_s{
 					ContentName: in_packet.ContentName,
 					SeqNum:      in_packet.SeqNum,
