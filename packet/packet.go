@@ -4,6 +4,7 @@ import (
   . "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
   "crypto/rsa"
+  "go/printer"
   "time"
 )
 
@@ -44,5 +45,17 @@ func (p DataPacket_s) New(seqNum int64) DataPacket_s {
     AllowCache:         p.AllowCache,
     PublisherPublicKey: p.PublisherPublicKey,
     ContentData:        p.ContentData,
+  }
+}
+
+//TODO
+func (p InterestPacket_s) New(dataPort int) InterestPacket_s {
+  return InterestPacket_s{
+    ContentName:        p.ContentName,
+    SeqNum:             p.SeqNum,
+    AllowCache:         p.AllowCache,
+    PublisherPublicKey: p.PublisherPublicKey,
+    DataPort:           dataPort,
+    InterestReturnPort: p.InterestReturnPort,
   }
 }

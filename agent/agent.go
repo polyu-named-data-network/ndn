@@ -5,8 +5,11 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/utils"
   "github.com/aabbcc1241/goutils/log"
   "net"
+  "strconv"
   "sync"
 )
+
+var Peer_interest_data_map = make(map[int]int)
 
 /*
   1. start interest server
@@ -51,6 +54,7 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
   for _, peer := range config.Agent.Peers {
     log.Info.Println("connecting to peer", peer)
 
+    var interestPort, dataPort int
     /* 3. connect to peer interest server */
     if conn, err := net.Dial(peer.Mode, utils.JoinHostPort(peer.Host, peer.InterestPort)); err != nil {
       log.Error.Printf("failed to connect to peer %v for interst (%v) %v\n", peer.Host, peer.InterestPort, err)
@@ -58,6 +62,8 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
       //wg.Add(1)
       //defer wg.Done()
       go interestHandler.HandleConnection(conn)
+      _, port_string, _ := net.SplitHostPort(conn.RemoteAddr().String())
+      interestPort, _ = strconv.Atoi(port_string)
     }
 
     /* 4. connect to peer data server */
@@ -67,7 +73,9 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
       //wg.Add(1)
       //defer wg.Done()
       go dataHandler.HandleConnection(conn)
+      dataPort = utils.RemotePort(conn)
     }
+    Peer_interest_data_map[interestPort] = dataPort
   }
 
   log.Info.Println("agent init finished")

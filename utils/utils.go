@@ -9,6 +9,11 @@ import (
 func JoinHostPort(host string, port int) string {
   return host + ":" + strconv.Itoa(port)
 }
+func RemotePort(conn net.Conn) int {
+  _, port_string, _ := net.SplitHostPort(conn)
+  port, _ := strconv.Atoi(port_string)
+  return port
+}
 
 type ConnectionHandler interface {
   HandleConnection(net.Conn)
