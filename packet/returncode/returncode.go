@@ -4,11 +4,11 @@ package returncode
 type Base int
 
 const (
-  NoRoute Base = 1 + iota
-  HopLimitExceeded
-  NoResource
-  PathError
-  Prohibited
-  Congested
-  MTUTooLarge
+	NoRoute Base = 1 + iota
+	HopLimitExceeded
+	NoResource
+	PathError
+	Prohibited
+	Congested
+	MTUTooLarge
 )
