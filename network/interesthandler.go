@@ -1,10 +1,11 @@
 package network
 
 import (
-  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/fib"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
   "bitbucket.org/polyu-named-data-network/ndn/pit"
+  "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "encoding/json"
   "github.com/aabbcc1241/goutils/log"
   "io"
@@ -59,8 +60,8 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
   //TODO
 }
 
-func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) (err error) {
-  log.Info.Println("received interest port", port, "packet", in_packet)
+func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (err error) {
+  log.Info.Println("received interest port", in_port, "packet", in_packet)
   /*  find data, response if found, otherwise do forwarding
    *    1. lookup CS
    *    2. lookup PIT
@@ -85,18 +86,39 @@ func OnInterestPacketReceived(port int, in_packet packet.InterestPacket_s) (err 
   } else {
     /* 3. lookup FIB */
     log.Debug.Println("checking FIB")
-    port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey)
-    if fibFound {
-      log.Debug.Println("found in FIB, port:", port)
-      if err := fib.Forward(port, in_packet); err != nil {
-        log.Debug.Println("failed to forward on port", port, err)
+    if out_port, fibFound := fib.Lookup(in_packet.ContentName, in_packet.PublisherPublicKey); fibFound {
+      log.Debug.Println("found in FIB, port:", out_port)
+      if err := fib.Forward(out_port, in_packet); err != nil {
+        log.Error.Println("failed to forward on port", out_port, err)
       } else {
-        pit.Register(port, in_packet)
+        pit.Register(in_port, in_packet)
       }
     } else {
       log.Debug.Println("not found in FIB")
-      log.Error.Println("not impl")
-      err = errortype.NotImpl
+      //TODO replace by the strategy in excel
+      sentCount := 0
+      for out_port := range portmaps.AllPorts() {
+        if out_port == in_port {
+          continue
+        }
+        if err := fib.Forward(out_port, in_packet); err != nil {
+          log.Error.Println("failed to forward on port", out_port, err)
+        } else {
+          sentCount += 1
+        }
+      }
+      if sentCount > 0 {
+        log.Debug.Printf("forwarded interest to %v peer(s)\n", sentCount)
+        portmaps.Encode(in_port, in_packet)
+      } else {
+        portmaps.Encode(in_port, packet.InterestReturnPacket_s{
+          ContentName: in_packet.ContentName,
+          SeqNum:      in_packet.SeqNum,
+          ReturnCode:  returncode.NoRoute,
+        })
+      }
+      //log.Error.Println("not impl")
+      //err = errortype.NotImpl
     }
   }
   return

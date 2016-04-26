@@ -22,7 +22,15 @@ func RemoveEncoder(port int) {
   delete(portLocks, port)
   delete(encoders, port)
 }
-
+func AllPorts() []int {
+  locksLock.Lock()
+  defer locksLock.Unlock()
+  ports := make([]int, len(portLocks))
+  for i := range portLocks {
+    ports = append(ports, i)
+  }
+  return ports
+}
 func Encode(port int, packet interface{}) error {
   locksLock.Lock()
   lock := portLocks[port]
