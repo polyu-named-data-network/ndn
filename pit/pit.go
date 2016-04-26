@@ -42,11 +42,13 @@ func Register(port int, packet packet.InterestPacket_s) {
   }
 }
 func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
+  log.Debug.Println("data packet received", in_packet)
   switch in_packet.ContentName.Type {
   case contentname.ExactMatch:
     pendingInterests := exactMatchTable[in_packet.ContentName.Name]
     for i := len(pendingInterests) - 1; i >= 0; i-- {
       current := pendingInterests[i]
+      log.Debug.Println("checking pending interest", current)
       /* keyMatched && seqMatched */
       if (current.PublisherPublicKey == utils.ZeroKey || current.PublisherPublicKey == in_packet.PublisherPublicKey) && (current.AllowCache || current.SeqNum == in_packet.SeqNum) {
         /* delete from PIT */
@@ -54,7 +56,7 @@ func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
         /* do forward */
         err = portmaps.SendDataPacket(current.DataPort, in_packet.New(current.SeqNum))
         if err != nil {
-          return err
+          log.Error.Println("failed to handle this pending interst", err, current)
         }
       }
     }

@@ -41,16 +41,19 @@ func (p dataHandler_s) HandleConnection(conn net.Conn) {
     in := json.NewDecoder(conn)
     portmaps.AddDataPacketEncoder(port, json.NewEncoder(conn))
     defer portmaps.RemoveDataPacketEncoder(port)
-    var in_packet packet.DataPacket_s
     var err error
     for err == nil {
+      log.Info.Println("waiting for data packet")
+      var in_packet packet.DataPacket_s
       err = in.Decode(&in_packet)
       if err != nil {
         if err != io.EOF {
           log.Error.Println("failed to decode incoming data packet", err)
+        } else {
+          log.Info.Println("data socket closed on port", port)
         }
       } else {
-        log.Info.Println("received data packet", in_packet)
+        //log.Info.Println("received data packet", in_packet)
         /*
          *    1. lookup PIT, forward to pending ports
          *    2. store in CS if allow cache

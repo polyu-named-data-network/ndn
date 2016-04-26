@@ -26,6 +26,7 @@ func AddInterestPacketEncoder(port int, encoder *json.Encoder) {
   defer interest_lock.Unlock()
   interest_encoder_map[port] = encoder
   interest_lock_map[port] = &sync.Mutex{}
+  log.Debug.Println("after adding, interest ports", interest_encoder_map)
 }
 func RemoveInterestPacketEncoder(port int) {
   log.Debug.Println("remove interest packet encoder on port", port)
@@ -99,9 +100,19 @@ func RemoveDataPacketEncoder(port int) {
   delete(data_lock_map, port)
 }
 func SendDataPacket(port int, packet packet.DataPacket_s) error {
-  data_lock_map[port].Lock()
-  defer data_lock_map[port].Unlock()
-  return data_encoder_map[port].Encode(packet)
+  if lock, found := data_lock_map[port]; found {
+    lock.Lock()
+    defer lock.Unlock()
+    if encoder, found := data_encoder_map[port]; found {
+      return encoder.Encode(packet)
+    } else {
+      log.Error.Println("data encoder not found on port", port)
+      return errortype.PortNotRegistered
+    }
+  } else {
+    log.Error.Println("data lock not found on port", port)
+    return errortype.PortNotRegistered
+  }
 }
 
 func AddInterestReturnEncoder(port int, encoder *json.Encoder) {
