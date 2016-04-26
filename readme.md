@@ -43,6 +43,9 @@ This program is designed on top of TCP/IP, it serve as the relay
  - not support asking peer yet (if not found in FIB)
 ### Version 2
  - use one connection for generic json exchange
+ - implemented CS (in memory)
+ - implemented PIT (in memory)
 ### Version further
- - add support to CS
- - add hook count
+ - add hop count
+    - user application specify limit
+    - tell user when data is found (travel distance)
