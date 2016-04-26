@@ -2,17 +2,19 @@
 package fib
 
 import (
+  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
+  "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
   "net"
   "strconv"
   "sync"
 )
 
-type publicKeyPortsMap_t map[packet.PublicKey_s][]int
+type publicKeyPortsMap_t map[rsa.PublicKey][]int
 
 var lock = sync.Mutex{}
 var exactMatchTable = make(map[string]publicKeyPortsMap_t)
@@ -37,7 +39,7 @@ func UnRegister(conn net.Conn) {
     }
   }
 }
-func Register(port int, packet packet.ServiceProviderPacket_s) {
+func Register(port int, packet packet.ServiceProviderPacket_s) error {
   switch packet.ContentName.ContentType {
   case contentname.ExactMatch:
     var publicKeyPortsMap publicKeyPortsMap_t
@@ -52,13 +54,14 @@ func Register(port int, packet packet.ServiceProviderPacket_s) {
     ports := publicKeyPortsMap[packet.PublicKey]
     ports = append(ports, port)
     publicKeyPortsMap[packet.PublicKey] = ports
-    return
+    log.Info.Printf("stored %v into FIB on port %v\n", packet.ContentName.Name, port)
+    return nil
   default:
     log.Error.Println("not impl", packet)
-    return
+    return errortype.NotImpl
   }
 }
-func Lookup(contentName contentname.ContentName_s, publicKey packet.PublicKey_s) (port int, found bool) {
+func Lookup(contentName contentname.ContentName_s, publicKey rsa.PublicKey) (port int, found bool) {
   lock.Lock()
   defer lock.Unlock()
   switch contentName.ContentType {
@@ -105,5 +108,6 @@ func Lookup(contentName contentname.ContentName_s, publicKey packet.PublicKey_s)
   return
 }
 func Forward(port int, packet packet.InterestPacket_s) (err error) {
-  return portmaps.Encode(port, packet)
+  log.Info.Println("forward interest to port", port)
+  return portmaps.SendInterestPacket(port, packet)
 }

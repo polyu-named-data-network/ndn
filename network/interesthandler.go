@@ -97,7 +97,10 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
       log.Debug.Println("not found in FIB")
       //TODO replace by the strategy in excel
       sentCount := 0
-      for out_port := range portmaps.AllPorts() {
+      ports := portmaps.AllPorts()
+      //log.Debug.Println("ports", ports)
+      for _, out_port := range ports {
+        //log.Debug.Println("out_port", out_port)
         if out_port == in_port {
           continue
         }
@@ -109,9 +112,10 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) (e
       }
       if sentCount > 0 {
         log.Debug.Printf("forwarded interest to %v peer(s)\n", sentCount)
-        portmaps.Encode(in_port, in_packet)
+        //portmaps.SendInterestPacket(in_port, in_packet)
+        pit.Register(in_port, in_packet)
       } else {
-        portmaps.Encode(in_port, packet.InterestReturnPacket_s{
+        portmaps.SendInterestReturnPacket(in_port, packet.InterestReturnPacket_s{
           ContentName: in_packet.ContentName,
           SeqNum:      in_packet.SeqNum,
           ReturnCode:  returncode.NoRoute,

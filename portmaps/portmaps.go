@@ -2,6 +2,8 @@ package portmaps
 
 import (
   "bitbucket.org/polyu-named-data-network/ndn/errortype"
+  "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
   "encoding/json"
   "sync"
 )
@@ -26,12 +28,27 @@ func AllPorts() []int {
   locksLock.Lock()
   defer locksLock.Unlock()
   ports := make([]int, len(portLocks))
-  for i := range portLocks {
-    ports = append(ports, i)
+  i := 0
+  for k, _ := range portLocks {
+    //log.Debug.Printf("k:%v\n", k)
+    ports[i] = k
+    i += 1
   }
   return ports
 }
-func Encode(port int, packet interface{}) error {
+func SendInterestPacket(port int, packet packet.InterestPacket_s) error {
+  return sendGenericPacket(port, packettype.InterestPacket_c, packet)
+}
+func SendInterestReturnPacket(port int, packet packet.InterestReturnPacket_s) error {
+  return sendGenericPacket(port, packettype.InterestReturnPacket_c, packet)
+}
+func SendDataPacket(port int, packet packet.DataPacket_s) error {
+  return sendGenericPacket(port, packettype.DataPacket_c, packet)
+}
+func SendServiceProviderPacket(port int, packet packet.ServiceProviderPacket_s) error {
+  return sendGenericPacket(port, packettype.ServiceProviderPacket_c, packet)
+}
+func sendGenericPacket(port int, packetType packettype.Base, out_packet interface{}) error {
   locksLock.Lock()
   lock := portLocks[port]
   locksLock.Unlock()
@@ -41,6 +58,12 @@ func Encode(port int, packet interface{}) error {
   if !found {
     return errortype.PortNotRegistered
   }
-  encoder.Encode(packet)
-  return nil
+  bs, err := json.Marshal(out_packet)
+  if err != nil {
+    return err
+  }
+  return encoder.Encode(packet.GenericPacket_s{
+    PacketType: packetType,
+    Payload:    bs,
+  })
 }

@@ -7,15 +7,15 @@ import (
   "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
+  "crypto/rsa"
   "github.com/aabbcc1241/goutils/log"
 )
 
 type pending_interest_s struct {
   SeqNum             uint64
   AllowCache         bool
-  PublisherPublicKey packet.PublicKey_s
-  DataPort           int
-  InterestReturnPort int
+  PublisherPublicKey rsa.PublicKey
+  InterestPort       int
 }
 
 var exactMatchTable = make(map[string][]pending_interest_s)
@@ -30,8 +30,7 @@ func Register(port int, packet packet.InterestPacket_s) {
       SeqNum:             packet.SeqNum,
       AllowCache:         packet.AllowCache,
       PublisherPublicKey: packet.PublisherPublicKey,
-      DataPort:           packet.DataPort,
-      InterestReturnPort: port,
+      InterestPort:       port,
     })
     log.Debug.Println("new list", pendingInterests)
     exactMatchTable[contentName.Name] = pendingInterests
@@ -40,7 +39,7 @@ func Register(port int, packet packet.InterestPacket_s) {
 
   }
 }
-func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
+func HandleDataPacket(in_packet packet.DataPacket_s) (err error) {
   switch in_packet.ContentName.ContentType {
   case contentname.ExactMatch:
     pendingInterests := exactMatchTable[in_packet.ContentName.Name]
@@ -51,9 +50,9 @@ func OnDataPacketReceived(in_packet packet.DataPacket_s) (err error) {
         /* delete from PIT */
         pendingInterests = append(pendingInterests[:i], pendingInterests[i+1:]...)
         /* do forward */
-        err = portmaps.Encode(current.DataPort, in_packet.New(current.SeqNum))
+        err = portmaps.SendDataPacket(current.InterestPort, in_packet.New(current.SeqNum))
         if err != nil {
-          log.Error.Printf("failed to send data packet to port %v in PIT, %v", current.DataPort, err)
+          log.Error.Printf("failed to send data packet to port %v in PIT, %v", current.InterestPort, err)
         }
       }
     }

@@ -2,18 +2,21 @@ package network
 
 import (
   "bitbucket.org/polyu-named-data-network/ndn/config"
+  "bitbucket.org/polyu-named-data-network/ndn/errortype"
   "bitbucket.org/polyu-named-data-network/ndn/packet"
+  "bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
   "bitbucket.org/polyu-named-data-network/ndn/portmaps"
   "bitbucket.org/polyu-named-data-network/ndn/utils"
   "encoding/json"
   "github.com/aabbcc1241/goutils/log"
+  "io"
   "net"
-  "reflect"
   "strconv"
   "sync"
 )
 
 func handleConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
+  log.Info.Println("connected with", conn.RemoteAddr().String())
   _, port_string, err := net.SplitHostPort(conn.RemoteAddr().String())
   if err != nil {
     log.Error.Println("failed to split port from remote address", conn.RemoteAddr(), err)
@@ -33,40 +36,60 @@ func handleConnection(conn net.Conn, wg *sync.WaitGroup) (err error) {
     defer wg.Done()
     for err == nil {
       log.Debug.Println("waiting for incoming packet")
-      var in_packet interface{}
+      var in_packet packet.GenericPacket_s
       err = decoder.Decode(&in_packet)
       if err != nil {
-        log.Error.Println("failed to parse incoming message into json", in_packet, err)
-        continue
+        if err != io.EOF {
+          log.Error.Println("failed to parse incoming message into json", in_packet, err)
+          //continue
+        }
+        break
       }
-      log.Debug.Println("received packet", in_packet)
-      packet_i, err2 := packet.ParsePacket(in_packet)
-      if err2 != nil {
-        err = err2
-        log.Error.Println("failed to parse packet into packet struct", in_packet, err)
-        continue
-      }
-      packetType := reflect.ValueOf(packet_i).Type()
-      log.Debug.Println("packet parsed to", packetType, packet_i)
-      switch packetType {
-      case reflect.ValueOf(packet.InterestPacket_s{}).Type():
-        err = OnInterestPacketReceived(port, packet_i.(packet.InterestPacket_s))
-        break
-      case reflect.ValueOf(packet.InterestReturnPacket_s{}).Type():
-        log.Error.Println("not impl", packetType)
-        break
-      case reflect.ValueOf(packet.DataPacket_s{}).Type():
-        err = OnDataPacketReceived(packet_i.(packet.DataPacket_s))
-        break
-      case reflect.ValueOf(packet.ServiceProviderPacket_s{}).Type():
-        OnServicePacketReceived(port, packet_i.(packet.ServiceProviderPacket_s))
-        break
-      default:
-        log.Error.Println("not impl", packetType)
+      if err := OnGenericPacketReceived(port, in_packet); err != nil {
+        log.Error.Println("failed to handle generic packet", err)
       }
     }
+    log.Debug.Println("close connection", conn.RemoteAddr().String())
   }()
   return
+}
+
+func OnGenericPacketReceived(in_port int, in_packet packet.GenericPacket_s) (err error) {
+  //log.Info.Println("received packet from port",in_port)
+  switch in_packet.PacketType {
+  case packettype.InterestPacket_c:
+    var packet packet.InterestPacket_s
+    err = json.Unmarshal(in_packet.Payload, &packet)
+    if err != nil {
+      return
+    }
+    return OnInterestPacketReceived(in_port, packet)
+  case packettype.InterestReturnPacket_c:
+    var packet packet.InterestReturnPacket_s
+    err = json.Unmarshal(in_packet.Payload, &packet)
+    if err != nil {
+      return
+    }
+    log.Error.Println("not impl: received interest return packet from port", in_port)
+    return errortype.NotImpl
+  case packettype.DataPacket_c:
+    var packet packet.DataPacket_s
+    err = json.Unmarshal(in_packet.Payload, &packet)
+    if err != nil {
+      return
+    }
+    return OnDataPacketReceived(in_port, packet)
+  case packettype.ServiceProviderPacket_c:
+    var packet packet.ServiceProviderPacket_s
+    err = json.Unmarshal(in_packet.Payload, &packet)
+    if err != nil {
+      return
+    }
+    return OnServicePacketReceived(in_port, packet)
+  default:
+    log.Error.Printf("packettype (%v) not suppored: %v\n", in_packet.PacketType, in_packet)
+    return errortype.NotImpl
+  }
 }
 
 /*
@@ -104,7 +127,7 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
     log.Info.Println("connecting to peer", peer)
     var conn net.Conn
     if conn, err = net.Dial(peer.Mode, utils.JoinHostPort(peer.Host, peer.Port)); err != nil {
-      log.Error.Printf("failed to connect to peer, host:%v, port%v", peer.Host, peer.Port)
+      log.Error.Printf("failed to connect to peer, host:%v, port:%v, %v", peer.Host, peer.Port, err)
     } else {
       handleConnection(conn, wg)
     }
