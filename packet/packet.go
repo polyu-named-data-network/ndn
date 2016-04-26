@@ -13,6 +13,7 @@ type InterestPacket_s struct {
   AllowCache         bool
   PublisherPublicKey rsa.PublicKey
   DataPort           int
+  InterestReturnPort int
 }
 
 /* NAK */

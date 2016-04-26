@@ -64,7 +64,9 @@ func (p dataHandler_s) HandleConnection(conn net.Conn) {
         }
 
         /* 2. store in CS if allow cache */
-        log.Error.Println("not impl")
+        if in_packet.AllowCache {
+          log.Error.Println("not impl: store into content store")
+        }
       }
     }
   }()

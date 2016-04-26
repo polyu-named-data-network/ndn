@@ -50,6 +50,8 @@ func (p interestHandler_s) HandleConnection(conn net.Conn) {
           if err != nil {
             if err != io.EOF {
               log.Error.Println("failed to decode incoming interest packet", err)
+            } else {
+              log.Debug.Printf("interest socket closed (%v)\n", in_port)
             }
           } else {
             OnInterestPacketReceived(in_port, in_packet)
@@ -96,8 +98,13 @@ func OnInterestPacketReceived(in_port int, in_packet packet.InterestPacket_s) {
       }
     } else {
       log.Debug.Println("not found in FIB")
-      portmaps.BroadcastInterestPacket(in_port, in_packet)
-      //TODO use strategy in excel
+      //TODO replace by the strategy in excel
+      if portmaps.BroadcastInterestPacket(in_port, in_packet) {
+        log.Info.Println("forwarded interst to peer")
+      } else {
+        log.Info.Println("interest cannot be resolved, no peer available to been forwarded")
+        //TODO send NAK
+      }
     }
     //TODO save in PIT to avoid loop
   }

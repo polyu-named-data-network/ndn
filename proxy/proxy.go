@@ -53,6 +53,8 @@ func Init(config config.Config, wg *sync.WaitGroup) (err error) {
                   if err != nil {
                     if err != io.EOF {
                       log.Error.Println("failed to decode, not service provider packet?", err)
+                    } else {
+                      log.Debug.Printf("closed service provider socket (%v)\n", port)
                     }
                   } else {
                     log.Debug.Println("received service provider packet", serviceProviderPacket)
