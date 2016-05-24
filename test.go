@@ -4,7 +4,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"github.com/aabbcc1241/goutils/lang"
+	"github.com/beenotung/goutils/lang"
 	"net"
 	"reflect"
 	"sync"

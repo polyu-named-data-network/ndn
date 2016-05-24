@@ -10,7 +10,7 @@ import (
 	"bitbucket.org/polyu-named-data-network/ndn/portmaps"
 	"bitbucket.org/polyu-named-data-network/ndn/utils"
 	"encoding/json"
-	"github.com/aabbcc1241/goutils/log"
+	"github.com/beenotung/goutils/log"
 	"io"
 	"net"
 	"strconv"

@@ -4,7 +4,7 @@ import (
 	"bitbucket.org/polyu-named-data-network/ndn/config"
 	"bitbucket.org/polyu-named-data-network/ndn/network"
 	"fmt"
-	mlog "github.com/aabbcc1241/goutils/log"
+	mlog "github.com/beenotung/goutils/log"
 	"log"
 	"sync"
 )
