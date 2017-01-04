@@ -1,6 +1,6 @@
 package contentname
 
-import "bitbucket.org/polyu-named-data-network/ndn/packet/datatype"
+import "github.com/polyu-named-data-network/ndn/packet/datatype"
 
 type Base int
 

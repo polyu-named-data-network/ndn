@@ -1,9 +1,9 @@
 package portmaps
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/errortype"
-	"bitbucket.org/polyu-named-data-network/ndn/packet"
-	"bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
+	"github.com/polyu-named-data-network/ndn/errortype"
+	"github.com/polyu-named-data-network/ndn/packet"
+	"github.com/polyu-named-data-network/ndn/packet/packettype"
 	"encoding/json"
 	"sync"
 )

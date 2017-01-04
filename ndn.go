@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/config"
-	"bitbucket.org/polyu-named-data-network/ndn/network"
+	"github.com/polyu-named-data-network/ndn/config"
+	"github.com/polyu-named-data-network/ndn/network"
 	"fmt"
 	mlog "github.com/beenotung/goutils/log"
 	"log"

@@ -1,14 +1,14 @@
 package network
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/config"
-	"bitbucket.org/polyu-named-data-network/ndn/errortype"
-	"bitbucket.org/polyu-named-data-network/ndn/fib"
-	"bitbucket.org/polyu-named-data-network/ndn/packet"
-	"bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
-	"bitbucket.org/polyu-named-data-network/ndn/pit"
-	"bitbucket.org/polyu-named-data-network/ndn/portmaps"
-	"bitbucket.org/polyu-named-data-network/ndn/utils"
+	"github.com/polyu-named-data-network/ndn/config"
+	"github.com/polyu-named-data-network/ndn/errortype"
+	"github.com/polyu-named-data-network/ndn/fib"
+	"github.com/polyu-named-data-network/ndn/packet"
+	"github.com/polyu-named-data-network/ndn/packet/packettype"
+	"github.com/polyu-named-data-network/ndn/pit"
+	"github.com/polyu-named-data-network/ndn/portmaps"
+	"github.com/polyu-named-data-network/ndn/utils"
 	"encoding/json"
 	"github.com/beenotung/goutils/log"
 	"io"

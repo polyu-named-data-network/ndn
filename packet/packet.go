@@ -1,9 +1,9 @@
 package packet
 
 import (
-	. "bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
-	"bitbucket.org/polyu-named-data-network/ndn/packet/packettype"
-	"bitbucket.org/polyu-named-data-network/ndn/packet/returncode"
+	. "github.com/polyu-named-data-network/ndn/packet/contentname"
+	"github.com/polyu-named-data-network/ndn/packet/packettype"
+	"github.com/polyu-named-data-network/ndn/packet/returncode"
 	"crypto/rsa"
 	"encoding/json"
 	"time"

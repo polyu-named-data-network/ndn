@@ -1,8 +1,8 @@
 package network
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/fib"
-	"bitbucket.org/polyu-named-data-network/ndn/packet"
+	"github.com/polyu-named-data-network/ndn/fib"
+	"github.com/polyu-named-data-network/ndn/packet"
 	"github.com/beenotung/goutils/log"
 )
 

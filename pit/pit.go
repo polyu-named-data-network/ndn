@@ -2,11 +2,11 @@
 package pit
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/errortype"
-	"bitbucket.org/polyu-named-data-network/ndn/packet"
-	"bitbucket.org/polyu-named-data-network/ndn/packet/contentname"
-	"bitbucket.org/polyu-named-data-network/ndn/portmaps"
-	"bitbucket.org/polyu-named-data-network/ndn/utils"
+	"github.com/polyu-named-data-network/ndn/errortype"
+	"github.com/polyu-named-data-network/ndn/packet"
+	"github.com/polyu-named-data-network/ndn/packet/contentname"
+	"github.com/polyu-named-data-network/ndn/portmaps"
+	"github.com/polyu-named-data-network/ndn/utils"
 	"crypto/rsa"
 	"github.com/beenotung/goutils/log"
 	"sync"

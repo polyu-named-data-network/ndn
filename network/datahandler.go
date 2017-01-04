@@ -1,9 +1,9 @@
 package network
 
 import (
-	"bitbucket.org/polyu-named-data-network/ndn/cs"
-	"bitbucket.org/polyu-named-data-network/ndn/packet"
-	"bitbucket.org/polyu-named-data-network/ndn/pit"
+	"github.com/polyu-named-data-network/ndn/cs"
+	"github.com/polyu-named-data-network/ndn/packet"
+	"github.com/polyu-named-data-network/ndn/pit"
 	"github.com/beenotung/goutils/log"
 )
 
